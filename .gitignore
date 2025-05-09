@@ -1,69 +1,101 @@
-# Arquivos específicos do sistema operacional
-.DS_Store
-Thumbs.db
-
-# Arquivos de IDE/ambiente de desenvolvimento
-.idea/
-.vscode/
+*#
 *.iml
-*.iws
 *.ipr
-*.swp
-.project
-.classpath
-.settings/
-.metadata/
-
-# Arquivos de build e dependências
-node_modules/
-target/
-bin/
-build/
-dist/
-out/
-lib/
+*.iws
 *.jar
-*.war
-*.ear
-*.class
-.gradle/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-package-lock.json
-yarn.lock
+*.sw?
+*~
+.#*
+.*.md.html
+.DS_Store
+.attach_pid*
+.classpath
+.factorypath
+.gradle
+.metadata
+.project
+.recommenders
+.settings
+.springBeans
+.vscode
+/code
+MANIFEST.MF
+_site/
+activemq-data
+bin
+build
+!/**/src/**/bin
+!/**/src/**/build
+build.log
+dependency-reduced-pom.xml
+dump.rdb
+interpolated*.xml
+lib/
+manifest.yml
+out
+overridedb.*
+target
+.flattened-pom.xml
+secrets.yml
+.gradletasknamecache
+.sts4-cache
+.git-hooks/
+node_modules
+.DS_STORE
 
-# Arquivos de configuração local
-.env
-.env.local
-application-local.properties
-application-local.yml
-application-dev.properties
-application-dev.yml
-
-# Logs
-logs/
+/dist/
+/bazel-out
+/integration/bazel/bazel-*
 *.log
+node_modules/
+modules/ssr-benchmarks/node_modules/
 
-# Arquivos de compilação Angular
-frontend/.angular/
-frontend/dist/
-frontend/.sass-cache/
+# Include when developing application packages.
+pubspec.lock
+.c9
+.idea/
+.devcontainer/*
+!.devcontainer/README.md
+!.devcontainer/recommended-devcontainer.json
+!.devcontainer/recommended-Dockerfile
+.settings/
+.vscode/launch.json
+.vscode/settings.json
+.vscode/tasks.json
+*.swo
+*.swp
+modules/.settings
+modules/.vscode
+.vimrc
+.nvimrc
 
-# Arquivos de compilação Spring Boot
-backend/**/target/
-backend/**/.mvn/wrapper/maven-wrapper.jar
+# Don't check in secret files
+*secret.js
 
-# Arquivos de dependências
-**/node_modules/
+# Ignore npm/yarn debug log
+npm-debug.log
+yarn-error.log
 
-# Outros
-.tmp/
-.temp/
-.cache/
-__pycache__/
-*.py[cod]
-*.class
-*.so
-.coverage
-htmlcov/
+# build-analytics
+.build-analytics
+
+# rollup-test output
+/modules/rollup-test/dist/
+
+# User specific bazel settings
+.bazelrc.user
+
+# User specific ng-dev settings
+.ng-dev.user*
+
+.notes.md
+baseline.json
+
+# Ignore .history for the xyz.local-history VSCode extension
+.history
+
+# Husky
+.husky/_
+
+# Ignore cache created with the Angular CLI.
+.angular/
