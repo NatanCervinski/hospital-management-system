@@ -1,0 +1,69 @@
+# Arquivos específicos do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de IDE/ambiente de desenvolvimento
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+*.swp
+.project
+.classpath
+.settings/
+.metadata/
+
+# Arquivos de build e dependências
+node_modules/
+target/
+bin/
+build/
+dist/
+out/
+lib/
+*.jar
+*.war
+*.ear
+*.class
+.gradle/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Arquivos de configuração local
+.env
+.env.local
+application-local.properties
+application-local.yml
+application-dev.properties
+application-dev.yml
+
+# Logs
+logs/
+*.log
+
+# Arquivos de compilação Angular
+frontend/.angular/
+frontend/dist/
+frontend/.sass-cache/
+
+# Arquivos de compilação Spring Boot
+backend/**/target/
+backend/**/.mvn/wrapper/maven-wrapper.jar
+
+# Arquivos de dependências
+**/node_modules/
+
+# Outros
+.tmp/
+.temp/
+.cache/
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.coverage
+htmlcov/
