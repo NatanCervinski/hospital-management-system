@@ -15,13 +15,5 @@ Este é um projeto de Sistema de Gestão Hospitalar desenvolvido para a discipli
 - `scripts/`: Scripts utilitários
 - `docs/`: Documentação do projeto
 
-## Equipe
-- Nome do Integrante 1
-- Nome do Integrante 2
-- Nome do Integrante 3
-- Nome do Integrante 4
-
 ## Instruções de Execução
-
-(Instruções serão adicionadas posteriormente)
 
