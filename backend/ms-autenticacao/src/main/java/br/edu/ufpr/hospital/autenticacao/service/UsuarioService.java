@@ -6,28 +6,27 @@ import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import br.edu.ufpr.hospital.autenticacao.dto.LoginRequestDTO;
+import br.edu.ufpr.hospital.autenticacao.dto.LoginResponseDTO;
 import br.edu.ufpr.hospital.autenticacao.model.FuncionarioModel;
 import br.edu.ufpr.hospital.autenticacao.model.UsuarioModel;
 import br.edu.ufpr.hospital.autenticacao.repository.UsuarioRepository;
+import br.edu.ufpr.hospital.autenticacao.security.JwtUtil;
 import br.edu.ufpr.hospital.autenticacao.security.SecureUtils;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 @Slf4j
 public class UsuarioService {
 
   // Dependências que você vai injetar
   private final UsuarioRepository usuarioRepository;
   private final PasswordEncoder passwordEncoder; // Vamos criar depois
-
-  // Construtor para injeção de dependências
-  public UsuarioService(UsuarioRepository usuarioRepository,
-      PasswordEncoder passwordEncoder) {
-    this.usuarioRepository = usuarioRepository;
-    this.passwordEncoder = passwordEncoder;
-  }
+  private final JwtUtil jwtUtil; // Utilitário para gerar tokens JWT
 
   // Métodos que vamos implementar
 
@@ -181,5 +180,67 @@ public class UsuarioService {
     //
     // return converterUsuarioParaDTO(usuario);
     // }
+  }
+
+  /**
+   * Autentica usuário e gera token JWT
+   */
+  public LoginResponseDTO autenticarUsuario(LoginRequestDTO loginDto) {
+    log.info("Tentativa de login para email: {}", loginDto.getEmail());
+
+    // 1. Buscar usuário por email
+    UsuarioModel usuario = usuarioRepository.findByEmail(loginDto.getEmail())
+        .orElseThrow(() -> {
+          log.warn("Tentativa de login com email inexistente: {}", loginDto.getEmail());
+          return new RuntimeException("Email ou senha inválidos");
+        });
+
+    // 2. Verificar se usuário está ativo
+    if (!usuario.getAtivo()) {
+      log.warn("Tentativa de login com usuário inativo: {}", loginDto.getEmail());
+      throw new RuntimeException("Usuário inativo");
+    }
+
+    // 3. Verificar senha usando o PasswordEncoder
+    if (!passwordEncoder.matches(loginDto.getSenha(),
+        usuario.getSenha() + "$" + usuario.getSalt())) {
+      log.warn("Tentativa de login com senha incorreta para email: {}",
+          loginDto.getEmail());
+      throw new RuntimeException("Email ou senha inválidos");
+    }
+
+    // 4. Atualizar último acesso
+    usuario.setUltimoAcesso(LocalDateTime.now());
+    usuarioRepository.save(usuario);
+
+    log.info("Login realizado com sucesso para usuário ID: {} - Tipo: {}",
+        usuario.getId(), usuario.getPerfil());
+
+    // 5. Gerar token JWT
+    String token = jwtUtil.generateToken(usuario);
+
+    // 6. Retornar resposta
+    return LoginResponseDTO.sucesso(
+        token,
+        usuario.getPerfil(),
+        usuario.getNome(),
+        usuario.getEmail(),
+        usuario.getId());
+  }
+
+  /**
+   * Busca usuário por email para autenticação
+   */
+  public Optional<UsuarioModel> buscarPorEmail(String email) {
+    return usuarioRepository.findByEmail(email);
+  }
+
+  /**
+   * Verifica se usuário existe e está ativo
+   */
+  public boolean usuarioExisteEAtivo(String email) {
+    return usuarioRepository.findByEmail(email)
+        .map(UsuarioModel::getAtivo)
+        .orElse(false);
   }
 }
