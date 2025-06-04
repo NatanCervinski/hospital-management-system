@@ -1,0 +1,69 @@
+version: '3.8' # Versão da sintaxe do Compose
+
+services:
+  # Serviço do Microsserviço de Autenticação
+  ms-autenticacao:
+    build: . # Onde o Dockerfile do ms-autenticacao está (diretório atual). Certifique-se que o Dockerfile está na mesma pasta do docker-compose.yml
+    container_name: ms-autenticacao-app
+    ports:
+      - "8081:8080" # Mapeia porta do host (8081) para a porta do contêiner (8081)
+    environment: # Variáveis de ambiente para o contêiner
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ms-autenticacao-db:5432/ms_autenticacao # O nome do host é o nome do serviço do banco de dados no docker-compose
+      SPRING_DATA_REDIS_HOST: redis # O nome do host é o nome do serviço do Redis no docker-compose
+      JWT_SECRET: minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem # Importante: Mantenha a mesma do application.properties
+      JWT_EXPIRATION: 86400000 # Importante: Mantenha a mesma do application.properties
+      # Para o ambiente de produção, é altamente recomendável usar variáveis de ambiente ou um gerenciador de segredos para JWT_SECRET.
+    depends_on: # Garante que os serviços dependentes iniciem primeiro.
+      ms-autenticacao-db:
+        condition: service_healthy # Espera o DB estar saudável
+      redis:
+        condition: service_healthy # Espera o Redis estar saudável
+    networks:
+      - hospital-net # Conecta à rede definida
+
+  # Serviço do Banco de Dados PostgreSQL para Autenticação
+  ms-autenticacao-db:
+    image: postgres:16-alpine # Imagem oficial do PostgreSQL
+    container_name: ms-autenticacao-db
+    environment:
+      POSTGRES_DB: ms_autenticacao
+      POSTGRES_USER: dac
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5432:5432" # Porta para acesso externo (opcional, mas útil para acessar o banco diretamente do host)
+    volumes:
+      - autenticacao_db_data:/var/lib/postgresql/data # Volume para persistir dados do PostgreSQL
+    healthcheck: # Healthcheck para o Compose esperar que o DB esteja pronto antes de iniciar o ms-autenticacao
+      test: ["CMD-SHELL", "pg_isready -U dac -d ms_autenticacao"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s # Tempo para o contêiner iniciar antes de começar a testar
+    networks:
+      - hospital-net
+
+  # Serviço do Redis para Blacklist de JWT
+  redis:
+    image: redis:7-alpine # Imagem oficial do Redis
+    container_name: redis-server
+    ports:
+      - "6379:6379" # Porta para acesso externo (opcional, mas útil para acessar o Redis CLI do host)
+    command: redis-server --appendonly yes # Comando para habilitar a persistência de dados no Redis (AOF)
+    volumes:
+      - redis_data:/data # Volume para persistir dados do Redis
+    healthcheck: # Healthcheck para o Compose esperar que o Redis esteja pronto
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+      start_period: 10s # Tempo para o contêiner iniciar antes de começar a testar
+    networks:
+      - hospital-net
+
+volumes:
+  autenticacao_db_data: # Define o volume nomeado para persistência do DB
+  redis_data: # Define o volume nomeado para persistência do Redis
+
+networks:
+  hospital-net: # Define uma rede interna para os contêineres se comunicarem
+    driver: bridge
