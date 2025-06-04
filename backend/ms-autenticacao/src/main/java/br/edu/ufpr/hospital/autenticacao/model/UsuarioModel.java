@@ -47,9 +47,6 @@ public abstract class UsuarioModel {
   @Pattern(regexp = "\\d{11}", message = "CPF deve conter 11 dígitos")
   private String cpf;
 
-  @Embedded
-  private Endereco endereco;
-
   @Column(name = "ativo", nullable = false)
   private Boolean ativo = true;
 
@@ -75,32 +72,6 @@ public abstract class UsuarioModel {
   @Transient
   public String getPerfil() {
     return this.getClass().getAnnotation(DiscriminatorValue.class).value();
-  }
-
-  @Embeddable
-  @Getter
-  @Setter
-  public class Endereco {
-    @Column(name = "cep")
-    private String cep;
-
-    @Column(name = "cidade")
-    private String cidade;
-
-    @Column(name = "estado")
-    private String estado;
-
-    @Column(name = "bairro")
-    private String bairro;
-
-    @Column(name = "rua")
-    private String rua;
-
-    @Column(name = "numero")
-    private String numero;
-
-    @Column(name = "complemento")
-    private String complemento;
   }
 
   public static final String PERFIL_PACIENTE = "PACIENTE";

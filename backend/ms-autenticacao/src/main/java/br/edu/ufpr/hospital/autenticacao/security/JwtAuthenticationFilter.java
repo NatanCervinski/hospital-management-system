@@ -12,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import br.edu.ufpr.hospital.autenticacao.service.UsuarioDetailsService;
+import br.edu.ufpr.hospital.autenticacao.service.TokenBlacklistService; // Importar o novo serviço
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -27,14 +28,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtUtil jwtUtil;
   private final UsuarioDetailsService userDetailsService;
+  private final TokenBlacklistService tokenBlacklistService; // Injetar o serviço de blacklist
 
   // Endpoints que não precisam de autenticação
   private static final List<String> PUBLIC_ENDPOINTS = Arrays.asList(
+      "/api/auth/register/paciente",
+      "/api/auth/check-email",
+      "/api/auth/check-cpf",
       "/api/auth/login",
       "/api/auth/logout",
       "/api/auth/health",
       "/api/health",
-      "/h2-console");
+      "/swagger-ui/**", // Mantendo Swagger público
+      "/v3/api-docs/**"); // Mantendo OpenAPI docs público
+  // "/h2-console/**"); // REMOVER OU COMENTAR NO FUTURO PARA PROD
 
   @Override
   protected void doFilterInternal(
@@ -59,13 +66,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       log.warn("Token JWT ausente ou inválido para endpoint protegido: {}", requestPath);
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       response.setContentType("application/json");
-      response.getWriter().write("{\"error\":\"Token JWT requerido\",\"message\":\"Acesso negado\"}");
+      response.getWriter()
+          .write("{\"error\":\"Token JWT requerido\",\"message\":\"Acesso negado: Token ausente ou malformado\"}");
       return;
     }
 
+    final String jwt = authorizationHeader.substring(7);
+
     try {
-      // 3. Extrair o token (remover "Bearer " do início)
-      final String jwt = authorizationHeader.substring(7);
+      // 3. **NOVO: Verificar se o token está na blacklist**
+      if (tokenBlacklistService.isTokenBlacklisted(jwt)) {
+        log.warn("Tentativa de acesso com token blacklisted: {}", requestPath);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter()
+            .write("{\"error\":\"Token invalidado\",\"message\":\"Acesso negado: Token está na blacklist\"}");
+        return;
+      }
+
       final String userEmail = jwtUtil.extractEmail(jwt);
 
       log.debug("Token extraído para usuário: {}", userEmail);
@@ -105,7 +123,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       log.error("Erro ao processar token JWT: {}", e.getMessage());
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       response.setContentType("application/json");
-      response.getWriter().write("{\"error\":\"Erro de autenticação\",\"message\":\"Token malformado\"}");
+      response.getWriter()
+          .write("{\"error\":\"Erro de autenticação\",\"message\":\"Token malformado ou erro interno\"}");
       return;
     }
 

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.constraints.NotBlank;
+import br.edu.ufpr.hospital.autenticacao.dto.CriarFuncionarioDTO;
 import br.edu.ufpr.hospital.autenticacao.model.FuncionarioModel;
 import br.edu.ufpr.hospital.autenticacao.service.UsuarioService;
 
@@ -26,16 +27,10 @@ public class FuncionarioController {
   private final UsuarioService usuarioService;
 
   @PostMapping
-  public ResponseEntity<FuncionarioModel> cadastrar(@Valid @RequestBody FuncionarioModel funcionario) {
-    FuncionarioModel novoFuncionario = new FuncionarioModel();
-    novoFuncionario.setNome(funcionario.getNome());
-    novoFuncionario.setCpf(funcionario.getCpf());
-    novoFuncionario.setEmail(funcionario.getEmail());
-    novoFuncionario.setTelefone(funcionario.getTelefone());
+  public ResponseEntity<FuncionarioModel> cadastrar(@Valid @RequestBody CriarFuncionarioDTO funcionarioDTO) {
+    FuncionarioModel novoFuncionario = usuarioService.cadastrarFuncionario(funcionarioDTO);
 
-    FuncionarioModel funcionarioSalvo = usuarioService.cadastrarFuncionario(novoFuncionario, funcionario.getSenha());
-
-    return ResponseEntity.status(HttpStatus.CREATED).body(funcionarioSalvo);
+    return ResponseEntity.status(HttpStatus.CREATED).body(novoFuncionario);
   }
 
   @GetMapping
