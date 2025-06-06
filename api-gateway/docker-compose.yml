@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  # API Gateway Service
+  api-gateway:
+    build: .
+    container_name: hospital-api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      JWT_SECRET: minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem
+      JWT_EXPIRATION: 86400000
+      
+      # Microservices URLs (using Docker network)
+      MS_AUTENTICACAO_URL: http://ms-autenticacao:8080
+      MS_PACIENTE_URL: http://ms-paciente:8080
+      MS_CONSULTA_URL: http://ms-consulta:8080
+      
+      # Rate limiting
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+      
+      # CORS
+      CORS_ORIGIN: http://localhost:4200
+    
+    depends_on:
+      - ms-autenticacao
+    
+    networks:
+      - hospital-net
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Authentication Microservice (reference)
+  ms-autenticacao:
+    image: ms-autenticacao:latest
+    container_name: ms-autenticacao-app
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ms-autenticacao-db:5432/ms_autenticacao
+      SPRING_DATA_REDIS_HOST: redis
+      JWT_SECRET: minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem
+      JWT_EXPIRATION: 86400000
+    depends_on:
+      ms-autenticacao-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - hospital-net
+
+  # PostgreSQL for Authentication
+  ms-autenticacao-db:
+    image: postgres:16-alpine
+    container_name: ms-autenticacao-db
+    environment:
+      POSTGRES_DB: ms_autenticacao
+      POSTGRES_USER: dac
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5432:5432"
+    volumes:
+      - autenticacao_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dac -d ms_autenticacao"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - hospital-net
+
+  # Redis for JWT Blacklist
+  redis:
+    image: redis:7-alpine
+    container_name: redis-server
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - hospital-net
+
+volumes:
+  autenticacao_db_data:
+  redis_data:
+
+networks:
+  hospital-net:
+    driver: bridge
