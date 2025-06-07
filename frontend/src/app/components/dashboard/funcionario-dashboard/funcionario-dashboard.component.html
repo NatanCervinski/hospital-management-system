@@ -1,0 +1,86 @@
+<div class="container-fluid py-4">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Carregando...</span>
+    </div>
+  </div>
+
+  <!-- Not Authenticated State -->
+  <div *ngIf="!isLoading && !isAuthenticated" class="row">
+    <div class="col-12 text-center">
+      <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Você precisa estar logado para acessar esta página.
+      </div>
+      <button class="btn btn-primary" (click)="router.navigate(['/login'])">
+        <i class="fas fa-sign-in-alt me-2"></i>Fazer Login
+      </button>
+    </div>
+  </div>
+
+  <!-- Authenticated State -->
+  <div *ngIf="!isLoading && isAuthenticated" class="row">
+    <div class="col-12">
+      <!-- Authentication Status -->
+      <div class="alert alert-success mb-4">
+        <div class="d-flex align-items-center">
+          <i class="fas fa-check-circle me-2"></i>
+          <div>
+            <strong>Logado com sucesso!</strong><br>
+            <small>
+              Usuário: {{ userName }} ({{ userEmail }}) | 
+              Tipo: {{ user?.tipo }} | 
+              Token válido
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 hospital-brand">Dashboard do Funcionário</h1>
+          <p class="text-muted mb-0">Bem-vindo(a), {{ userName }}</p>
+        </div>
+        <button class="btn btn-outline-danger" (click)="logout()">
+          <i class="fas fa-sign-out-alt me-2"></i>Sair
+        </button>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 mb-4">
+          <div class="card card-shadow h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-users fa-3x text-primary mb-3"></i>
+              <h5 class="card-title">Pacientes</h5>
+              <p class="card-text">Gerenciar cadastro de pacientes</p>
+              <button class="btn btn-hospital">Acessar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+          <div class="card card-shadow h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-calendar-alt fa-3x text-success mb-3"></i>
+              <h5 class="card-title">Consultas</h5>
+              <p class="card-text">Agendar e gerenciar consultas</p>
+              <button class="btn btn-success">Acessar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+          <div class="card card-shadow h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-file-medical fa-3x text-warning mb-3"></i>
+              <h5 class="card-title">Prontuários</h5>
+              <p class="card-text">Visualizar prontuários médicos</p>
+              <button class="btn btn-warning">Acessar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

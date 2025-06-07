@@ -1,0 +1,131 @@
+<div class="login-container">
+  <div class="container-fluid vh-100">
+    <div class="row h-100">
+      <!-- Left side - Hospital branding -->
+      <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center bg-primary">
+        <div class="text-center text-white">
+          <div class="mb-4">
+            <i class="fas fa-heartbeat display-1"></i>
+          </div>
+          <h1 class="display-4 fw-bold mb-3">Sistema Hospitalar</h1>
+          <p class="lead mb-0">Gestão completa e integrada para sua instituição de saúde</p>
+          <p class="mt-2">Acesso seguro para pacientes e funcionários</p>
+        </div>
+      </div>
+
+      <!-- Right side - Login form -->
+      <div class="col-md-6 d-flex align-items-center justify-content-center">
+        <div class="w-100" style="max-width: 400px;">
+          <div class="card card-shadow border-0">
+            <div class="card-body p-5">
+              <!-- Header -->
+              <div class="text-center mb-4">
+                <div class="d-md-none mb-3">
+                  <i class="fas fa-heartbeat fs-1 text-primary"></i>
+                </div>
+                <h2 class="hospital-brand mb-1">Acesso ao Sistema</h2>
+                <p class="text-muted">Entre com suas credenciais</p>
+              </div>
+
+              <!-- Session Message Alert -->
+              <div *ngIf="sessionMessage" class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                {{ sessionMessage }}
+                <button type="button" class="btn-close" (click)="sessionMessage = ''" aria-label="Close"></button>
+              </div>
+
+              <!-- Error Alert -->
+              <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {{ errorMessage }}
+                <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+              </div>
+
+              <!-- Login Form -->
+              <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+                <!-- Email Field -->
+                <div class="mb-3">
+                  <label for="email" class="form-label fw-semibold">
+                    <i class="fas fa-envelope me-2"></i>Email
+                  </label>
+                  <input 
+                    type="email" 
+                    class="form-control form-control-lg"
+                    [class.is-invalid]="isFieldInvalid('email')"
+                    id="email" 
+                    formControlName="email"
+                    placeholder="seu.email@hospital.com"
+                    autocomplete="email">
+                  <div *ngIf="isFieldInvalid('email')" class="invalid-feedback">
+                    {{ getFieldError('email') }}
+                  </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="mb-4">
+                  <label for="senha" class="form-label fw-semibold">
+                    <i class="fas fa-lock me-2"></i>Senha
+                  </label>
+                  <div class="input-group">
+                    <input 
+                      [type]="showPassword ? 'text' : 'password'" 
+                      class="form-control form-control-lg"
+                      [class.is-invalid]="isFieldInvalid('senha')"
+                      id="senha" 
+                      formControlName="senha"
+                      placeholder="Digite sua senha"
+                      autocomplete="current-password">
+                    <button 
+                      type="button" 
+                      class="btn btn-outline-secondary"
+                      (click)="togglePasswordVisibility()"
+                      [attr.aria-label]="showPassword ? 'Ocultar senha' : 'Mostrar senha'">
+                      <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                    </button>
+                  </div>
+                  <div *ngIf="isFieldInvalid('senha')" class="invalid-feedback d-block">
+                    {{ getFieldError('senha') }}
+                  </div>
+                </div>
+
+                <!-- Login Button -->
+                <div class="d-grid mb-3">
+                  <button 
+                    type="submit" 
+                    class="btn btn-hospital btn-lg"
+                    [disabled]="isLoading">
+                    <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <i *ngIf="!isLoading" class="fas fa-sign-in-alt me-2"></i>
+                    {{ isLoading ? 'Entrando...' : 'Entrar no Sistema' }}
+                  </button>
+                </div>
+
+                <!-- Test Credentials Info -->
+                <div class="card bg-light border-0 mt-4">
+                  <div class="card-body p-3">
+                    <h6 class="card-title text-muted mb-2">
+                      <i class="fas fa-info-circle me-1"></i>Credenciais de Teste
+                    </h6>
+                    <div class="small text-muted">
+                      <div><strong>Email:</strong> func_pre&#64;hospital.com</div>
+                      <div><strong>Senha:</strong> TADS</div>
+                      <div><strong>Tipo:</strong> Funcionário</div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="text-center mt-4">
+            <p class="text-muted small">
+              <i class="fas fa-shield-alt me-1"></i>
+              Sistema seguro com autenticação JWT
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
