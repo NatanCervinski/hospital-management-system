@@ -25,7 +25,6 @@ public class CriarFuncionarioDTO {
   @Size(max = 150, message = "Email não pode ter mais de 150 caracteres")
   private String email;
 
-  @NotBlank(message = "Senha é obrigatória")
   @Size(min = 6, max = 50, message = "Senha deve ter entre 6 e 50 caracteres")
   private String senha;
 

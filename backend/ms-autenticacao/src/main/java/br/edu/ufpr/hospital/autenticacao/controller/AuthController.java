@@ -12,6 +12,7 @@ import br.edu.ufpr.hospital.autenticacao.dto.LoginRequestDTO;
 import br.edu.ufpr.hospital.autenticacao.dto.LoginResponseDTO;
 import br.edu.ufpr.hospital.autenticacao.dto.AutocadastroRequestDTO;
 import br.edu.ufpr.hospital.autenticacao.dto.AutocadastroResponseDTO;
+import br.edu.ufpr.hospital.autenticacao.dto.CriarFuncionarioDTO;
 import br.edu.ufpr.hospital.autenticacao.service.UsuarioService;
 import br.edu.ufpr.hospital.autenticacao.service.AutocadastroService;
 import br.edu.ufpr.hospital.autenticacao.service.TokenBlacklistService; // Importar o novo serviço
@@ -125,6 +126,98 @@ public class AuthController {
 
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
+  }
+
+  /**
+   * Autocadastro público de Funcionário
+   * Cadastro com CPF, nome, e-mail, senha (4 dígitos aleatórios via e-mail).
+   * Endereço opcional. Status ativo por padrão.
+   *
+   * @param funcionarioRequest dados do funcionário (nome, CPF, email, etc.)
+   * @return dados do funcionário cadastrado (senha enviada por e-mail)
+   */
+  @PostMapping("/register/funcionario")
+  public ResponseEntity<?> autocadastroFuncionario(@Valid @RequestBody CriarFuncionarioDTO funcionarioRequest) {
+    try {
+      log.info("Recebida solicitação de autocadastro de funcionário para email: {}", 
+          funcionarioRequest.getEmail());
+
+      // Validações rápidas antes do processamento
+      if (autocadastroService.emailJaExiste(funcionarioRequest.getEmail())) {
+        log.warn("Tentativa de autocadastro de funcionário com email já existente: {}", 
+            funcionarioRequest.getEmail());
+
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Email já cadastrado");
+        error.put("message", "Este e-mail já está cadastrado no sistema");
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+      }
+
+      if (autocadastroService.cpfJaExiste(funcionarioRequest.getCpf())) {
+        log.warn("Tentativa de autocadastro de funcionário com CPF já existente");
+
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "CPF já cadastrado");
+        error.put("message", "Este CPF já está cadastrado no sistema");
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+      }
+
+      // Processar autocadastro
+      var funcionarioSalvo = autocadastroService.cadastrarFuncionarioPublico(funcionarioRequest);
+
+      // Criar resposta de sucesso
+      Map<String, Object> response = new HashMap<>();
+      response.put("id", funcionarioSalvo.getId());
+      response.put("nome", funcionarioSalvo.getNome());
+      response.put("email", funcionarioSalvo.getEmail());
+      response.put("cpf", formatarCpfParaExibicao(funcionarioSalvo.getCpf()));
+      response.put("telefone", funcionarioSalvo.getTelefone());
+      response.put("ativo", funcionarioSalvo.getAtivo());
+      response.put("dataCadastro", funcionarioSalvo.getDataCadastro());
+      response.put("tipo", "FUNCIONARIO");
+      response.put("message", "Funcionário cadastrado com sucesso. Senha enviada por e-mail.");
+
+      log.info("Autocadastro de funcionário realizado com sucesso: {} - ID: {}", 
+          funcionarioSalvo.getEmail(), funcionarioSalvo.getId());
+
+      return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+    } catch (RuntimeException e) {
+      log.warn("Falha no autocadastro de funcionário para email: {} - Motivo: {}", 
+          funcionarioRequest.getEmail(), e.getMessage());
+
+      Map<String, String> error = new HashMap<>();
+      error.put("error", "Erro no cadastro");
+      error.put("message", e.getMessage());
+
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+
+    } catch (Exception e) {
+      log.error("Erro interno no autocadastro de funcionário para email: {} - Erro: {}", 
+          funcionarioRequest.getEmail(), e.getMessage(), e);
+
+      Map<String, String> error = new HashMap<>();
+      error.put("error", "Erro interno do servidor");
+      error.put("message", "Tente novamente em alguns minutos");
+
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+  }
+
+  /**
+   * Formata CPF para exibição (XXX.XXX.XXX-XX)
+   */
+  private String formatarCpfParaExibicao(String cpf) {
+    if (cpf == null || cpf.length() != 11)
+      return cpf;
+
+    return String.format("%s.%s.%s-%s",
+        cpf.substring(0, 3),
+        cpf.substring(3, 6),
+        cpf.substring(6, 9),
+        cpf.substring(9, 11));
   }
 
   /**

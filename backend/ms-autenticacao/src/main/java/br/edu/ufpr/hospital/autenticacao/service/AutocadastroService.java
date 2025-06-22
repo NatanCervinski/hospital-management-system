@@ -9,7 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.edu.ufpr.hospital.autenticacao.dto.AutocadastroRequestDTO;
 import br.edu.ufpr.hospital.autenticacao.dto.AutocadastroResponseDTO;
+import br.edu.ufpr.hospital.autenticacao.dto.CriarFuncionarioDTO;
 import br.edu.ufpr.hospital.autenticacao.dto.EnderecoDTO;
+import br.edu.ufpr.hospital.autenticacao.model.FuncionarioModel;
 import br.edu.ufpr.hospital.autenticacao.model.PacienteModel;
 import br.edu.ufpr.hospital.autenticacao.model.UsuarioModel;
 import br.edu.ufpr.hospital.autenticacao.repository.UsuarioRepository;
@@ -243,5 +245,124 @@ public class AutocadastroService {
    */
   public boolean cpfJaExiste(String cpf) {
     return usuarioRepository.findByCpf(cpf).isPresent();
+  }
+
+  /**
+   * Autocadastro público de Funcionário
+   * Cadastro com CPF, nome, e-mail, senha (4 dígitos aleatórios via e-mail).
+   */
+  public FuncionarioModel cadastrarFuncionarioPublico(CriarFuncionarioDTO request) {
+    log.info("Iniciando autocadastro público de funcionário com email: {}", request.getEmail());
+
+    try {
+      // 1. Validar dados únicos (CPF e email)
+      validarDadosUnicos(request.getCpf(), request.getEmail());
+
+      // 2. Gerar senha numérica de 4 dígitos
+      String senhaGerada = gerarSenhaNumericaAleatoria();
+      log.debug("Senha numérica gerada para funcionário: {}", request.getEmail());
+
+      // 3. Criptografar senha
+      String salt = SecureUtils.generateSalt();
+      String hashSenha = SecureUtils.getSecurePassword(senhaGerada, salt);
+
+      // 4. Criar funcionário
+      FuncionarioModel funcionario = criarFuncionario(request, hashSenha, salt);
+
+      // 5. Salvar no banco
+      FuncionarioModel funcionarioSalvo = usuarioRepository.save(funcionario);
+      log.info("Funcionário cadastrado com sucesso. ID: {}, Email: {}",
+          funcionarioSalvo.getId(), funcionarioSalvo.getEmail());
+
+      // 6. Enviar senha por e-mail
+      enviarSenhaPorEmailFuncionario(funcionarioSalvo, senhaGerada);
+
+      return funcionarioSalvo;
+
+    } catch (Exception e) {
+      log.error("Erro no autocadastro público de funcionário: {}", e.getMessage(), e);
+      throw new RuntimeException("Erro no cadastro: " + e.getMessage());
+    }
+  }
+
+  /**
+   * Cria o objeto FuncionarioModel a partir do request
+   */
+  private FuncionarioModel criarFuncionario(CriarFuncionarioDTO request, String hashSenha, String salt) {
+    FuncionarioModel funcionario = new FuncionarioModel();
+
+    // Dados básicos herdados de UsuarioModel
+    funcionario.setNome(request.getNome());
+    funcionario.setCpf(request.getCpf());
+    funcionario.setEmail(request.getEmail());
+    funcionario.setSenha(hashSenha);
+    funcionario.setSalt(salt);
+
+    // Dados específicos do funcionário
+    funcionario.setTelefone(request.getTelefone());
+
+    // Endereço (opcional para funcionário)
+    if (request.getCep() != null && !request.getCep().isEmpty()) {
+      log.debug("Definindo endereço do funcionário: {}", request.getRua());
+      funcionario.definirEndereco(
+          request.getRua(), // logradouro
+          request.getBairro(),
+          request.getCidade(),
+          request.getEstado() != null ? request.getEstado().toUpperCase() : null,
+          request.getCep());
+      
+      // Número e complemento separados
+      funcionario.definirNumeroComplemento(request.getNumero(), request.getComplemento());
+    }
+
+    // Dados padrão
+    funcionario.setAtivo(true);
+    funcionario.setDataCadastro(LocalDateTime.now());
+    funcionario.setSenhaTemporaria(true); // Senha gerada automaticamente
+
+    log.debug("Objeto FuncionarioModel criado: {}", funcionario.getEmail());
+    return funcionario;
+  }
+
+  /**
+   * Envia senha por e-mail para o funcionário
+   */
+  private void enviarSenhaPorEmailFuncionario(FuncionarioModel funcionario, String senhaGerada) {
+    try {
+      log.info("Enviando senha por e-mail para funcionário: {}", funcionario.getEmail());
+
+      String assunto = "Bem-vindo ao Sistema Hospitalar - Credenciais de Funcionário";
+      String corpo = construirCorpoEmailFuncionario(funcionario, senhaGerada);
+
+      emailService.enviarEmail(funcionario.getEmail(), assunto, corpo);
+
+      log.info("E-mail enviado com sucesso para funcionário: {}", funcionario.getEmail());
+
+    } catch (Exception e) {
+      log.error("Erro ao enviar e-mail para funcionário {}: {}", funcionario.getEmail(), e.getMessage());
+      // Não falha o cadastro por erro de e-mail, mas registra o problema
+    }
+  }
+
+  /**
+   * Constrói o corpo do e-mail com a senha para funcionário
+   */
+  private String construirCorpoEmailFuncionario(FuncionarioModel funcionario, String senhaGerada) {
+    return String.format(
+        "Olá %s,\n\n" +
+            "Seu cadastro como funcionário no Sistema Hospitalar foi realizado com sucesso!\n\n" +
+            "Seus dados de acesso:\n" +
+            "E-mail: %s\n" +
+            "Senha: %s\n\n" +
+            "IMPORTANTE:\n" +
+            "- Esta é uma senha temporária de 4 dígitos\n" +
+            "- Mantenha-a em local seguro\n" +
+            "- Use estes dados para fazer login no sistema\n" +
+            "- Como funcionário, você tem acesso às funcionalidades administrativas\n\n" +
+            "Atenciosamente,\n" +
+            "Equipe do Sistema Hospitalar",
+        funcionario.getNome(),
+        funcionario.getEmail(),
+        senhaGerada);
   }
 }
