@@ -27,6 +27,7 @@ services:
     
     depends_on:
       - ms-autenticacao
+      - ms-paciente
     
     networks:
       - hospital-net
@@ -42,12 +43,16 @@ services:
 
   # Authentication Microservice (reference)
   ms-autenticacao:
-    image: ms-autenticacao:latest
+    build:
+      context: ../backend/ms-autenticacao
+      dockerfile: Dockerfile
     container_name: ms-autenticacao-app
     ports:
       - "8081:8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://ms-autenticacao-db:5432/ms_autenticacao
+      SPRING_DATASOURCE_USERNAME: dac
+      SPRING_DATASOURCE_PASSWORD: 123
       SPRING_DATA_REDIS_HOST: redis
       JWT_SECRET: minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem
       JWT_EXPIRATION: 86400000
@@ -98,9 +103,42 @@ services:
     networks:
       - hospital-net
 
+  # Microsserviço de paciente
+  ms-paciente:
+    build:
+      context: ../backend/ms-paciente
+      dockerfile: Dockerfile
+    container_name: ms-paciente-app
+    ports:
+      - "8082:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-paciente:5432/mspacientedb
+      SPRING_DATASOURCE_USERNAME: user_paciente
+      SPRING_DATASOURCE_PASSWORD: password_paciente
+      JWT_SECRET: minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem
+      VIACEP_BASE_URL: https://viacep.com.br/ws/
+    depends_on:
+      - db-paciente
+    networks:
+      - hospital-net
+
+  db-paciente:
+    image: postgres:15-alpine
+    container_name: db-paciente
+    environment:
+      POSTGRES_DB: mspacientedb
+      POSTGRES_USER: user_paciente
+      POSTGRES_PASSWORD: password_paciente
+    volumes:
+      - paciente_db_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - hospital-net
 volumes:
   autenticacao_db_data:
   redis_data:
+  paciente_db_data: 
 
 networks:
   hospital-net:

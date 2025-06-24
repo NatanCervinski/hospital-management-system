@@ -1,0 +1,46 @@
+# ms-paciente/docker-compose.yml (Temporário)
+services:
+  # Microsserviço de Paciente
+  ms-paciente:
+    build:
+      context: . # O Dockerfile está na pasta atual (ms-paciente)
+      dockerfile: Dockerfile
+    container_name: ms-paciente-dev
+    ports:
+      - "8082:8080" # Porta do contêiner:porta do host
+    environment:
+      # Variáveis de ambiente para o Spring Boot do MS de Paciente
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-paciente-dev:5432/mspacientedb
+      SPRING_DATASOURCE_USERNAME: user_paciente
+      SPRING_DATASOURCE_PASSWORD: password_paciente
+      # Chave secreta JWT (a mesma que você usará no MS de Autenticação para validação)
+      JWT_SECRET: "minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem"
+      VIACEP_BASE_URL: https://viacep.com.br/ws/
+    depends_on:
+      - db-paciente-dev # Garante que o banco de dados inicie antes
+    networks:
+      - hospital-net # Rede isolada para este ambiente de teste
+
+  # Banco de Dados do Microsserviço de Paciente
+  db-paciente-dev:
+    image: postgres:15-alpine # Imagem oficial do PostgreSQL (versão 15, leve)
+    container_name: db-paciente-dev
+    environment:
+      POSTGRES_DB: mspacientedb
+      POSTGRES_USER: user_paciente
+      POSTGRES_PASSWORD: password_paciente
+    volumes:
+      - db-paciente-data-dev:/var/lib/postgresql/data # Volume para persistir os dados
+    ports:
+      - "5434:5432" # Mapeia a porta 5432 do contêiner para 5434 do host
+    networks:
+      - hospital-net
+
+# Definição da rede
+networks:
+  hospital-net:
+    external: true
+
+# Definição do volume para persistência de dados do banco
+volumes:
+  db-paciente-data-dev:

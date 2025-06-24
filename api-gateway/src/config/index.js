@@ -9,15 +9,15 @@ module.exports = {
   
   microservices: {
     autenticacao: {
-      url: process.env.MS_AUTENTICACAO_URL || 'http://localhost:8081',
+      url: process.env.MS_AUTENTICACAO_URL || 'http://ms-autenticacao:8080',
       timeout: 30000
     },
     paciente: {
-      url: process.env.MS_PACIENTE_URL || 'http://localhost:8082',
+      url: process.env.MS_PACIENTE_URL || 'http://ms-paciente:8080',
       timeout: 30000
     },
     consulta: {
-      url: process.env.MS_CONSULTA_URL || 'http://localhost:8083',
+      url: process.env.MS_CONSULTA_URL || 'http://ms-consulta:8080',
       timeout: 30000
     }
   },
