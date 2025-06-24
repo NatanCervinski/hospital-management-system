@@ -122,19 +122,20 @@ export class BuyPointsModalComponent implements OnInit, OnDestroy {
     if (error.status === 400) {
       return error.error?.message || 'Dados inválidos. Verifique os valores e tente novamente.';
     }
-    
-    if (error.status === 401 || error.status === 403) {
+
+    // if (error.status === 401 || error.status === 403) {
+    if (error.status === 401) {
       return 'Sessão expirada. Faça login novamente.';
     }
-    
+
     if (error.status === 500) {
       return 'Sistema temporariamente indisponível. Tente novamente em alguns minutos.';
     }
-    
+
     if (error.status === 0) {
       return 'Falha na conexão. Verifique sua internet e tente novamente.';
     }
-    
+
     return error.error?.message || 'Erro inesperado. Tente novamente.';
   }
 

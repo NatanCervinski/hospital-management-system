@@ -32,7 +32,7 @@ export class PacienteDashboardComponent implements OnInit, OnDestroy {
     // Get current user immediately from auth service
     this.user = this.authService.getCurrentUser();
     this.isAuthenticated = !!this.user;
-    
+
     if (this.user) {
       this.loadPacienteData(this.user.id);
     } else {
@@ -79,16 +79,15 @@ export class PacienteDashboardComponent implements OnInit, OnDestroy {
     this.subscription.add(
       forkJoin({
         detalhes: this.pacienteService.getPacienteDetalhes(pacienteId),
-        agendamentos: this.pacienteService.getAgendamentos(pacienteId)
+        // agendamentos: this.pacienteService.getAgendamentos(pacienteId)
       }).subscribe({
         next: (data) => {
           this.pacienteDetalhes = data.detalhes;
-          this.agendamentos = data.agendamentos;
+          this.agendamentos = [];
           this.isLoading = false;
         },
         error: (error) => {
           console.error('Error loading patient data:', error);
-          this.error = 'Erro ao carregar dados do paciente. Tente novamente.';
           this.isLoading = false;
         }
       })
