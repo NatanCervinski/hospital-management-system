@@ -97,31 +97,68 @@ PATIENT_RESPONSE=$(curl -s -X POST "$BASE_URL/api/auth/register/paciente" \
 echo "$PATIENT_RESPONSE" | jq .
 print_result
 
+# Teste de endpoint público do MS Paciente
+print_header "7. Teste MS Paciente - Endpoint Público de Cadastro"
+print_info "Testando: POST $BASE_URL/api/pacientes/cadastro"
+PACIENTE_CADASTRO_DATA='{
+  "usuarioId": 999,
+  "cpf": "11122233344",
+  "nome": "Maria Teste Gateway",
+  "email": "maria.gateway@test.com",
+  "cep": "80010000",
+  "logradouro": "Rua das Flores",
+  "numero": "456",
+  "bairro": "Centro",
+  "localidade": "Curitiba",
+  "uf": "PR"
+}'
+
+PACIENTE_CADASTRO_RESPONSE=$(curl -s -X POST "$BASE_URL/api/pacientes/cadastro" \
+  -H "Content-Type: application/json" \
+  -d "$PACIENTE_CADASTRO_DATA")
+
+echo "$PACIENTE_CADASTRO_RESPONSE" | jq .
+print_result
+
+# Teste de health check agregado
+print_header "8. Health Check Agregado (MS Autenticacao + MS Paciente)"
+print_info "Testando: GET $BASE_URL/api/health"
+curl -s -f "$BASE_URL/api/health" | jq .
+print_result
+
 # Teste de endpoint protegido
 if [ -n "$AUTH_TOKEN" ]; then
-  print_header "7. Endpoint Protegido - Funcionários"
+  print_header "9. Endpoint Protegido - Funcionários"
   print_info "Testando: GET $BASE_URL/api/funcionarios"
   curl -s -H "Authorization: Bearer $AUTH_TOKEN" "$BASE_URL/api/funcionarios" | jq .
   print_result
 
-  print_header "8. Verificação de Token"
+  print_header "10. Verificação de Token"
   print_info "Testando: GET $BASE_URL/api/auth/verify"
   curl -s -H "Authorization: Bearer $AUTH_TOKEN" "$BASE_URL/api/auth/verify" | jq .
+  print_result
+
+  print_header "11. Endpoint Protegido MS Paciente - Listar Pacientes"
+  print_info "Testando: GET $BASE_URL/api/pacientes"
+  curl -s -H "Authorization: Bearer $AUTH_TOKEN" "$BASE_URL/api/pacientes" | jq .
   print_result
 fi
 
 # Teste de rota não encontrada
-print_header "9. Teste de Rota Não Encontrada"
+print_header "12. Teste de Rota Não Encontrada"
 print_info "Testando: GET $BASE_URL/api/rota-inexistente"
 curl -s "$BASE_URL/api/rota-inexistente" | jq .
 print_result
 
 # Teste de rate limiting (muitas requisições rápidas)
-print_header "10. Teste de Rate Limiting"
+print_header "13. Teste de Rate Limiting"
 print_info "Fazendo múltiplas requisições rápidas..."
 for i in {1..5}; do
   curl -s -o /dev/null -w "Req $i: %{http_code}\n" "$BASE_URL/health"
 done
 
 print_header "Testes Concluídos"
-echo -e "${BLUE}Para mais testes detalhados, consulte o script de testes do MS de Autenticação${NC}"
+echo -e "${BLUE}Gateway configurado para integrar MS Autenticacao e MS Paciente${NC}"
+echo -e "${BLUE}Para mais testes detalhados:${NC}"
+echo -e "${BLUE}  - MS Autenticacao: ./backend/ms-autenticacao/testes.sh${NC}"
+echo -e "${BLUE}  - MS Paciente: ./backend/ms-paciente/testes.sh${NC}"

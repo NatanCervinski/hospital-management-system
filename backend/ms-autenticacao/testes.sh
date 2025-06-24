@@ -23,9 +23,24 @@ print_result() {
   fi
 }
 
+# Verificar se jq está instalado
+if ! command -v jq &> /dev/null; then
+    echo -e "${RED}ERRO: jq não está instalado. Instale com: sudo apt-get install jq${NC}"
+    exit 1
+fi
+
+# Verificar se serviço está rodando
+print_header "0. Verificando se MS Autenticação está rodando"
+if ! curl -s http://localhost:8081/actuator/health > /dev/null; then
+    echo -e "${RED}ERRO: MS Autenticação não está respondendo em localhost:8081${NC}"
+    echo "Verifique se o Docker Compose está rodando com: docker-compose ps"
+    exit 1
+fi
+echo -e "${GREEN}MS Autenticação está rodando!${NC}"
+
 # --- 1. Health Check do Serviço ---
 print_header "1. Teste de Health Check"
-http GET $BASE_URL/health
+http GET http://localhost:8081/actuator/health
 print_result
 
 # --- 2. Autocadastro de Paciente (R01) ---
@@ -62,29 +77,48 @@ print_header "4. Verificar se CPF Não Existe (99988877766)"
 http GET $BASE_URL/check-cpf cpf=="99988877766"
 print_result
 
-# --- 5. Login de Usuário (R02) ---
+# --- 5. Login de Usuário (R02) - CORRIGIDO ---
 print_header "5. Login de Funcionário Padrão (func_pre@hospital.com)"
-LOGIN_RESPONSE=$(http POST $BASE_URL/login email="func_pre@hospital.com" senha="TADS")
-AUTH_TOKEN=$(echo "$LOGIN_RESPONSE" | http -j get token) # Extrai o token da resposta JSON
 
-echo -e "Token obtido: ${GREEN}$AUTH_TOKEN${NC}"
+# Fazer login e capturar resposta completa
+LOGIN_RESPONSE=$(http --json POST $BASE_URL/login email="func_pre@hospital.com" senha="TADS" --print=b 2>/dev/null)
+
+echo "Resposta do login:"
+echo "$LOGIN_RESPONSE" | jq '.' 2>/dev/null || echo "$LOGIN_RESPONSE"
+
+# Extrair token usando jq
+AUTH_TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r '.token // empty' 2>/dev/null)
+
+if [ -z "$AUTH_TOKEN" ] || [ "$AUTH_TOKEN" = "null" ] || [ "$AUTH_TOKEN" = "" ]; then
+    echo -e "${RED}ERRO: Token não foi extraído da resposta${NC}"
+    echo "Tentando método alternativo..."
+    
+    # Método alternativo sem jq
+    AUTH_TOKEN=$(echo "$LOGIN_RESPONSE" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+    
+    if [ -z "$AUTH_TOKEN" ]; then
+        echo -e "${RED}ERRO: Não foi possível extrair o token. Verifique a resposta acima.${NC}"
+        exit 1
+    fi
+fi
+
+echo -e "Token obtido: ${GREEN}${AUTH_TOKEN:0:50}...${NC}"
 print_result
 
 # --- 6. Testar Endpoint Protegido (Ex: /api/funcionarios) ---
-# Usando a URL completa para o endpoint de funcionário (que está no MS de autenticação)
 print_header "6. Acessar Endpoint Protegido (funcionarios)"
-http GET http://localhost:8081/api/funcionarios "Authorization: Bearer $AUTH_TOKEN"
+http GET http://localhost:8081/api/funcionarios "Authorization:Bearer $AUTH_TOKEN"
 print_result
 
 # --- 7. Verificar Validade do Token ---
 print_header "7. Verificar Validade do Token"
-http GET $BASE_URL/verify "Authorization: Bearer $AUTH_TOKEN"
+http GET $BASE_URL/verify "Authorization:Bearer $AUTH_TOKEN"
 print_result
 
 # --- 8. Cadastro de Novo Funcionário (R13 - Inserção) ---
 print_header "8. Cadastro de Novo Funcionário (Requer token de FUNCIONARIO)"
 http POST http://localhost:8081/api/funcionarios \
-  "Authorization: Bearer $AUTH_TOKEN" \
+  "Authorization:Bearer $AUTH_TOKEN" \
   nome="Novo Funcionario Teste Automático" \
   cpf="55566677788" \
   email="novo.funcionario.automatico@hospital.com" \
@@ -94,12 +128,12 @@ print_result
 
 # --- 9. Logout de Usuário (R02 - Invalidação do Token) ---
 print_header "9. Logout de Usuário (Invalidando o token atual)"
-http POST $BASE_URL/logout "Authorization: Bearer $AUTH_TOKEN"
+http POST $BASE_URL/logout "Authorization:Bearer $AUTH_TOKEN"
 print_result
 
 # --- 10. Testar Token Blacklisted ---
 print_header "10. Testar Token Blacklisted (Deve falhar)"
-http GET http://localhost:8081/api/funcionarios "Authorization: Bearer $AUTH_TOKEN"
+http GET http://localhost:8081/api/funcionarios "Authorization:Bearer $AUTH_TOKEN"
 print_result
 
 echo -e "\n${YELLOW}--- Testes Concluídos ---${NC}"

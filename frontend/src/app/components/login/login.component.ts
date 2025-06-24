@@ -61,7 +61,8 @@ export class LoginComponent implements OnInit {
       this.authService.login(loginData).subscribe({
         next: (response) => {
           this.isLoading = false;
-          this.redirectToDashboard();
+          // Use the response type directly instead of relying on getUserType()
+          this.redirectToDashboardWithType(response.tipo);
         },
         error: (error) => {
           this.isLoading = false;
@@ -75,6 +76,16 @@ export class LoginComponent implements OnInit {
 
   private redirectToDashboard(): void {
     const userType = this.authService.getUserType();
+    if (userType === 'FUNCIONARIO') {
+      this.router.navigate(['/dashboard/funcionario']);
+    } else if (userType === 'PACIENTE') {
+      this.router.navigate(['/dashboard/paciente']);
+    } else {
+      this.router.navigate(['/dashboard']);
+    }
+  }
+
+  private redirectToDashboardWithType(userType: 'PACIENTE' | 'FUNCIONARIO'): void {
     if (userType === 'FUNCIONARIO') {
       this.router.navigate(['/dashboard/funcionario']);
     } else if (userType === 'PACIENTE') {

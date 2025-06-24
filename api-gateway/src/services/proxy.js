@@ -116,12 +116,27 @@ class ProxyService {
         }
 
         console.log(`🔄 Encaminhando requisição para o serviço: ${serviceConfig.name} (${req.method})`);
-
-
+        console.log(`📍 URL original: ${req.originalUrl}`);
+        
+        // Determine which path to use based on service requirements
+        let finalPath;
+        if (serviceConfig.name === 'autenticacao') {
+          // ms-autenticacao expects /api prefix for auth and funcionarios
+          finalPath = req.originalUrl;
+          console.log(`📍 Mantendo /api para ms-autenticacao: ${finalPath}`);
+        } else if (serviceConfig.name === 'paciente') {
+          // ms-paciente expects paths like /pacientes/* (no /api prefix)
+          finalPath = targetPath;
+          console.log(`📍 Removendo /api para ms-paciente: ${finalPath}`);
+        } else {
+          // Other services - remove /api prefix by default
+          finalPath = targetPath;
+          console.log(`📍 Removendo /api para ${serviceConfig.name}: ${finalPath}`);
+        }
 
         const result = await ProxyService.forwardRequest(
           serviceConfig.url,
-          req.originalUrl,  // Mantém /api/auth/login
+          finalPath,
           req.method,
           req.headers,
           req.body,

@@ -22,19 +22,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Entity
 @Table(name = "pacientes")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 
-
 public class Paciente {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private Integer id;
 
     @Column(name = "usuario_id", nullable = false)
     private Integer usuarioId;
@@ -82,7 +79,5 @@ public class Paciente {
     protected void onCreate() {
         this.dataCadastro = LocalDateTime.now();
     }
-    
-
 
 }

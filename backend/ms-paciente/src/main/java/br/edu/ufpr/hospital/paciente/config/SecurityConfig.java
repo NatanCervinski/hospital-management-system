@@ -30,7 +30,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // Desabilita CSRF para APIs RESTful
             .authorizeHttpRequests(authorize -> authorize
                 // Endpoint de autocadastro de paciente é público
-                .requestMatchers("/pacientes/cadastro").permitAll()
+                .requestMatchers("POST", "/pacientes/cadastro").permitAll()
+                // Health check endpoints são públicos
+                .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                 // Todas as outras requisições exigem autenticação
                 .anyRequest().authenticated()
             )

@@ -1,0 +1,98 @@
+<!-- Buy Points Modal -->
+<div class="modal fade" id="buyPointsModal" tabindex="-1" aria-labelledby="buyPointsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title hospital-brand" id="buyPointsModalLabel">
+          <i class="fas fa-coins me-2"></i>Comprar Pontos
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form [formGroup]="buyPointsForm" (ngSubmit)="onSubmit()">
+        <div class="modal-body">
+          <!-- Error Alert -->
+          <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            {{ errorMessage }}
+          </div>
+
+          <!-- Points Purchase Info -->
+          <div class="mb-4 p-3 bg-light rounded">
+            <div class="text-center">
+              <i class="fas fa-info-circle text-primary me-2"></i>
+              <strong>Informação:</strong> 1 ponto = R$ 5,00
+            </div>
+          </div>
+
+          <!-- Quantity Input -->
+          <div class="mb-3">
+            <label for="quantidadePontos" class="form-label">
+              <i class="fas fa-hashtag me-1"></i>Quantidade de Pontos
+            </label>
+            <input 
+              type="number" 
+              class="form-control"
+              id="quantidadePontos"
+              formControlName="quantidadePontos"
+              min="1"
+              max="1000"
+              placeholder="Digite a quantidade de pontos"
+              [class.is-invalid]="quantidadePontos?.invalid && quantidadePontos?.touched">
+            
+            <!-- Validation Messages -->
+            <div *ngIf="quantidadePontos?.invalid && quantidadePontos?.touched" class="invalid-feedback">
+              <div *ngIf="quantidadePontos?.errors?.['required']">
+                A quantidade de pontos é obrigatória.
+              </div>
+              <div *ngIf="quantidadePontos?.errors?.['min']">
+                A quantidade mínima é 1 ponto.
+              </div>
+              <div *ngIf="quantidadePontos?.errors?.['max']">
+                A quantidade máxima é 1000 pontos.
+              </div>
+            </div>
+          </div>
+
+          <!-- Calculated Cost Display -->
+          <div class="text-center p-3 bg-success bg-opacity-10 border border-success rounded">
+            <h5 class="text-success mb-0">
+              <i class="fas fa-calculator me-2"></i>Valor a Pagar:
+            </h5>
+            <h3 class="text-success mt-2 mb-0">
+              {{ valorCalculadoReais | currency:'BRL':'symbol':'1.2-2':'pt' }}
+            </h3>
+            <small class="text-muted">
+              {{ buyPointsForm.get('quantidadePontos')?.value || 0 }} 
+              {{ (buyPointsForm.get('quantidadePontos')?.value || 0) === 1 ? 'ponto' : 'pontos' }}
+            </small>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button 
+            type="button" 
+            class="btn btn-outline-secondary" 
+            (click)="onCancel()"
+            [disabled]="isLoading">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+          
+          <button 
+            type="submit" 
+            class="btn btn-success"
+            [disabled]="!isFormValid || isLoading">
+            
+            <!-- Loading Spinner -->
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            
+            <!-- Button Content -->
+            <i *ngIf="!isLoading" class="fas fa-credit-card me-2"></i>
+            <span *ngIf="isLoading">Processando...</span>
+            <span *ngIf="!isLoading">Confirmar Compra</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

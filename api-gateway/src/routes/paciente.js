@@ -6,13 +6,14 @@ const router = express.Router();
 
 // Rotas que podem ser acessadas por funcionários (sem restrição de tipo de usuário)
 const funcionarioAccessRoutes = [
-  '/search',
-  '/list'
+  '/by-cpf',        // GET /pacientes/by-cpf/{cpf} - buscar paciente por CPF
+  '/deduzir-pontos', // PUT /pacientes/{id}/deduzir-pontos 
+  '/adicionar-pontos' // PUT /pacientes/{id}/adicionar-pontos
 ];
 
 // Rotas públicas (não requerem autenticação)
 const publicRoutes = [
-  '/search-public'
+  '/cadastro'  // POST /pacientes/cadastro - autocadastro de paciente
 ];
 
 // Middleware para verificar tipo de acesso necessário

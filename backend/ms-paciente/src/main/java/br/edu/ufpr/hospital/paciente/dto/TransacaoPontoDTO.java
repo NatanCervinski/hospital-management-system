@@ -10,7 +10,7 @@ import lombok.Data;
 
 @Data
 public class TransacaoPontoDTO {
-    private UUID id;
+    private Integer id;
     private LocalDateTime dataHora;
     private TipoTransacaoPonto tipo;
     private OrigemTransacaoPonto origem;

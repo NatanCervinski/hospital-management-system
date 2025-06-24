@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import br.edu.ufpr.hospital.paciente.model.TransacaoPonto;
 
-public interface TransacaoPontoRepository extends JpaRepository<TransacaoPonto, UUID> {
-    List<TransacaoPonto> findByPacienteIdOrderByDataHoraDesc(UUID pacienteId);
+public interface TransacaoPontoRepository extends JpaRepository<TransacaoPonto, Integer> {
+    List<TransacaoPonto> findByPacienteIdOrderByDataHoraDesc(Integer pacienteId);
 }

@@ -1,0 +1,129 @@
+# Docker Compose para executar todo o sistema de microserviços do hospital
+# MS Autenticacao + MS Paciente + Bancos de Dados + Redis
+# Execute com: docker-compose -f docker-compose-full.yml up --build
+
+services:
+  # ============================================================================
+  # MS AUTENTICACAO
+  # ============================================================================
+  ms-autenticacao:
+    build: 
+      context: ./ms-autenticacao
+      dockerfile: Dockerfile
+    container_name: ms-autenticacao-app
+    ports:
+      - "8081:8081" # MS Autenticacao na porta 8081
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ms-autenticacao-db:5432/ms_autenticacao
+      SPRING_DATA_REDIS_HOST: redis
+      JWT_SECRET: minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem
+      JWT_EXPIRATION: 86400000
+    depends_on:
+      ms-autenticacao-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - hospital-net
+
+  # ============================================================================
+  # MS PACIENTE  
+  # ============================================================================
+  ms-paciente:
+    build:
+      context: ./ms-paciente
+      dockerfile: Dockerfile
+    container_name: ms-paciente-app
+    ports:
+      - "8083:8083" # MS Paciente na porta 8083
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ms-paciente-db:5432/hospital_paciente
+      SPRING_DATASOURCE_USERNAME: dac
+      SPRING_DATASOURCE_PASSWORD: 123
+      JWT_SECRET: minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_SECRET_KEY: minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem
+    depends_on:
+      ms-paciente-db:
+        condition: service_healthy
+      ms-autenticacao: # MS Paciente depende do MS Autenticacao para funcionar
+        condition: service_started
+    networks:
+      - hospital-net
+
+  # ============================================================================
+  # BANCOS DE DADOS
+  # ============================================================================
+  
+  # Banco do MS Autenticacao
+  ms-autenticacao-db:
+    image: postgres:16-alpine
+    container_name: ms-autenticacao-db
+    environment:
+      POSTGRES_DB: ms_autenticacao
+      POSTGRES_USER: dac
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5432:5432" # Banco do MS Autenticacao
+    volumes:
+      - autenticacao_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dac -d ms_autenticacao"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - hospital-net
+
+  # Banco do MS Paciente
+  ms-paciente-db:
+    image: postgres:16-alpine
+    container_name: ms-paciente-db
+    environment:
+      POSTGRES_DB: hospital_paciente
+      POSTGRES_USER: dac
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5434:5432" # Banco do MS Paciente (porta diferente para não conflitar)
+    volumes:
+      - paciente_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dac -d hospital_paciente"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - hospital-net
+
+  # ============================================================================
+  # REDIS (para blacklist de JWT)
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: redis-server
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - hospital-net
+
+# ============================================================================
+# VOLUMES E REDES
+# ============================================================================
+volumes:
+  autenticacao_db_data:
+  paciente_db_data:
+  redis_data:
+
+networks:
+  hospital-net:
+    driver: bridge

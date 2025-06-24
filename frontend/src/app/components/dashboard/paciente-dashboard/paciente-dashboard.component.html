@@ -6,6 +6,12 @@
     </div>
   </div>
 
+  <!-- Error State -->
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    {{ error }}
+  </div>
+
   <!-- Not Authenticated State -->
   <div *ngIf="!isLoading && !isAuthenticated" class="row">
     <div class="col-12 text-center">
@@ -22,21 +28,6 @@
   <!-- Authenticated State -->
   <div *ngIf="!isLoading && isAuthenticated" class="row">
     <div class="col-12">
-      <!-- Authentication Status -->
-      <div class="alert alert-success mb-4">
-        <div class="d-flex align-items-center">
-          <i class="fas fa-check-circle me-2"></i>
-          <div>
-            <strong>Logado com sucesso!</strong><br>
-            <small>
-              Usuário: {{ userName }} ({{ userEmail }}) | 
-              Tipo: {{ user?.tipo }} | 
-              Token válido
-            </small>
-          </div>
-        </div>
-      </div>
-
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h1 class="h3 hospital-brand">Área do Paciente</h1>
@@ -47,25 +38,123 @@
         </button>
       </div>
 
-      <div class="row">
-        <div class="col-md-6 mb-4">
-          <div class="card card-shadow h-100">
+      <!-- Points Card -->
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <div class="card card-shadow">
             <div class="card-body text-center">
-              <i class="fas fa-calendar-check fa-3x text-primary mb-3"></i>
-              <h5 class="card-title">Minhas Consultas</h5>
-              <p class="card-text">Visualizar consultas agendadas</p>
-              <button class="btn btn-hospital">Ver Consultas</button>
+              <i class="fas fa-coins fa-3x text-warning mb-3"></i>
+              <h5 class="card-title">Meus Pontos</h5>
+              <h2 class="text-warning">{{ pacienteDetalhes?.pontos || 0 }}</h2>
+              <button class="btn btn-warning btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#buyPointsModal">
+                <i class="fas fa-plus me-1"></i>Comprar Pontos
+              </button>
             </div>
           </div>
         </div>
 
+        <div class="col-md-8">
+          <div class="card card-shadow">
+            <div class="card-body">
+              <h5 class="card-title">
+                <i class="fas fa-info-circle me-2"></i>Informações da Conta
+              </h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <p><strong>Nome:</strong> {{ pacienteDetalhes?.nome || userName }}</p>
+                  <p><strong>Email:</strong> {{ pacienteDetalhes?.email || userEmail }}</p>
+                </div>
+                <div class="col-md-6">
+                  <p><strong>ID:</strong> {{ pacienteDetalhes?.id || user?.id }}</p>
+                  <p><strong>Tipo:</strong> {{ user?.tipo }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appointments Table -->
+      <div class="card card-shadow">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-calendar-alt me-2"></i>Meus Agendamentos
+          </h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="agendamentos.length === 0" class="text-center py-4">
+            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Nenhum agendamento encontrado.</p>
+          </div>
+
+          <div *ngIf="agendamentos.length > 0" class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Código</th>
+                  <th>Especialidade</th>
+                  <th>Médico</th>
+                  <th>Data/Hora</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let agendamento of agendamentos">
+                  <td>{{ agendamento.codigo }}</td>
+                  <td>{{ agendamento.especialidade }}</td>
+                  <td>{{ agendamento.nomeMedico }}</td>
+                  <td>{{ agendamento.dataHora | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td>
+                    <span class="badge rounded-pill" [ngClass]="getStatusClass(agendamento.status)">
+                      {{ agendamento.status }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                      <!-- Cancel Button -->
+                      <button 
+                        *ngIf="agendamento.status === 'CRIADO' || agendamento.status === 'CHECK-IN'"
+                        class="btn btn-outline-danger"
+                        (click)="cancelarAgendamento(agendamento)"
+                        title="Cancelar agendamento">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                      </button>
+                      
+                      <!-- Check-in Button -->
+                      <button 
+                        *ngIf="isCheckInAvailable(agendamento)"
+                        class="btn btn-outline-primary"
+                        (click)="fazerCheckin(agendamento)"
+                        title="Fazer check-in">
+                        <i class="fas fa-check-in"></i>
+                        Check-in
+                      </button>
+                    </div>
+                    
+                    <!-- No actions available -->
+                    <span *ngIf="!isCheckInAvailable(agendamento) && agendamento.status !== 'CRIADO' && agendamento.status !== 'CHECK-IN'" 
+                          class="text-muted small">
+                      Nenhuma ação disponível
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="row mt-4">
         <div class="col-md-6 mb-4">
           <div class="card card-shadow h-100">
             <div class="card-body text-center">
-              <i class="fas fa-file-medical-alt fa-3x text-success mb-3"></i>
-              <h5 class="card-title">Meu Prontuário</h5>
-              <p class="card-text">Acessar histórico médico</p>
-              <button class="btn btn-success">Ver Prontuário</button>
+              <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
+              <h5 class="card-title">Agendar Consulta</h5>
+              <p class="card-text">Agendar uma nova consulta</p>
+              <button class="btn btn-hospital">Agendar</button>
             </div>
           </div>
         </div>
@@ -80,18 +169,10 @@
             </div>
           </div>
         </div>
-
-        <div class="col-md-6 mb-4">
-          <div class="card card-shadow h-100">
-            <div class="card-body text-center">
-              <i class="fas fa-clock fa-3x text-info mb-3"></i>
-              <h5 class="card-title">Histórico</h5>
-              <p class="card-text">Consultas e exames realizados</p>
-              <button class="btn btn-info">Ver Histórico</button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Buy Points Modal -->
+<app-buy-points-modal (purchaseSuccess)="onPurchaseSuccess()"></app-buy-points-modal>

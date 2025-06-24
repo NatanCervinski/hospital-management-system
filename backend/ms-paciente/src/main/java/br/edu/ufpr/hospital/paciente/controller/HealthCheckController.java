@@ -16,7 +16,7 @@ public class HealthCheckController {
   public ResponseEntity<Map<String, Object>> healthCheck() {
     Map<String, Object> response = new HashMap<>();
     response.put("status", "UP");
-    response.put("service", "Consultas e Agendamentos");
+    response.put("service", "MS Paciente");
     response.put("timestamp", System.currentTimeMillis());
 
     return ResponseEntity.ok(response);

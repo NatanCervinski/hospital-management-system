@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 public class PacienteResponseDTO {
-    private UUID id;
+    private Integer id;
     private String cpf;
     private String nome;
     private String email;

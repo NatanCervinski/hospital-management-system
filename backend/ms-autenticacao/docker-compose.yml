@@ -4,7 +4,7 @@ services:
     build: . # Onde o Dockerfile do ms-autenticacao está (diretório atual). Certifique-se que o Dockerfile está na mesma pasta do docker-compose.yml
     container_name: ms-autenticacao-app
     ports:
-      - "8081:8080" # Mapeia porta do host (8081) para a porta do contêiner (8081)
+      - "8081:8081" # Mapeia porta do host (8081) para a porta do contêiner (8081)
     environment: # Variáveis de ambiente para o contêiner
       SPRING_DATASOURCE_URL: jdbc:postgresql://ms-autenticacao-db:5432/ms_autenticacao # O nome do host é o nome do serviço do banco de dados no docker-compose
       SPRING_DATA_REDIS_HOST: redis # O nome do host é o nome do serviço do Redis no docker-compose

@@ -26,7 +26,6 @@ import br.edu.ufpr.hospital.paciente.dto.SaldoPontosDTO;
 import br.edu.ufpr.hospital.paciente.model.OrigemTransacaoPonto;
 import br.edu.ufpr.hospital.paciente.service.PacienteService;
 import jakarta.validation.Valid;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/pacientes")
@@ -39,42 +38,62 @@ public class PacienteController {
     }
 
     @PostMapping("/cadastro")
-    public Mono<ResponseEntity<PacienteResponseDTO>> cadastrarPaciente(@Valid @RequestBody PacienteCadastroDTO dto, @AuthenticationPrincipal Jwt jwt) {
-        Integer usuarioId = jwt.getClaim("id");
-        return pacienteService.cadastrarPaciente(dto, usuarioId)
-                .map(p -> ResponseEntity.status(HttpStatus.CREATED).body(p));
+    public ResponseEntity<PacienteResponseDTO> cadastrarPaciente(@Valid @RequestBody PacienteCadastroDTO dto) {
+        PacienteResponseDTO paciente = pacienteService.cadastrarPaciente(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(paciente);
     }
 
     @PreAuthorize("hasAuthority('PACIENTE')")
-@PostMapping("/{pacienteId}/comprar-pontos")
-public ResponseEntity<PacienteResponseDTO> comprarPontos(
-        @PathVariable UUID pacienteId,
-        @Valid @RequestBody CompraPontosDTO dto,
-        @AuthenticationPrincipal Jwt jwt) {
+    @PostMapping("/{pacienteId}/comprar-pontos")
+    public ResponseEntity<PacienteResponseDTO> comprarPontos(
+            @PathVariable Integer pacienteId,
+            @Valid @RequestBody CompraPontosDTO dto,
+            @AuthenticationPrincipal Jwt jwt) {
 
-    Integer usuarioId = jwt.getClaim("id");
+        Integer usuarioId = ((Number) jwt.getClaim("id")).intValue();
 
-    if (!pacienteService.pacientePertenceAoUsuario(pacienteId, usuarioId)) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (!pacienteService.pacientePertenceAoUsuario(pacienteId, usuarioId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        PacienteResponseDTO updatedPaciente = pacienteService.comprarPontos(pacienteId, dto);
+        return ResponseEntity.ok(updatedPaciente);
     }
-
-    PacienteResponseDTO updatedPaciente = pacienteService.comprarPontos(pacienteId, dto);
-    return ResponseEntity.ok(updatedPaciente);
-}
 
     @PreAuthorize("hasAnyAuthority('PACIENTE', 'FUNCIONARIO')")
     @GetMapping("/{pacienteId}/saldo-e-historico")
-    public ResponseEntity<SaldoPontosDTO> consultarSaldoEHistorico(@PathVariable UUID pacienteId) {
+    public ResponseEntity<SaldoPontosDTO> consultarSaldoEHistorico(
+            @PathVariable Integer pacienteId,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String userRole = jwt.getClaim("tipo");
+        if ("PACIENTE".equals(userRole)) {
+            Integer usuarioId = ((Number) jwt.getClaim("id")).intValue();
+            if (!pacienteService.pacientePertenceAoUsuario(pacienteId, usuarioId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+
         SaldoPontosDTO saldoDTO = pacienteService.consultarSaldoEHistorico(pacienteId);
         return ResponseEntity.ok(saldoDTO);
     }
 
-    // Endpoints internos para comunicação entre microsserviços (não expostos diretamente ao frontend)
-    // Estes seriam chamados pelo MS Consulta/Agendamento, provavelmente via API Gateway/Feign Client
+    // Endpoint para comunicação entre microsserviços - buscar paciente por CPF
+    @PreAuthorize("hasAuthority('FUNCIONARIO')")
+    @GetMapping("/by-cpf/{cpf}")
+    public ResponseEntity<PacienteResponseDTO> buscarPacientePorCpf(@PathVariable String cpf) {
+        PacienteResponseDTO paciente = pacienteService.buscarPacientePorCpf(cpf);
+        return ResponseEntity.ok(paciente);
+    }
+
+    // Endpoints internos para comunicação entre microsserviços (não expostos
+    // diretamente ao frontend)
+    // Estes seriam chamados pelo MS Consulta/Agendamento, provavelmente via API
+    // Gateway/Feign Client
     @PreAuthorize("hasAuthority('FUNCIONARIO')")
     @PutMapping("/{pacienteId}/deduzir-pontos")
     public ResponseEntity<PacienteResponseDTO> deduzirPontos(
-            @PathVariable UUID pacienteId,
+            @PathVariable Integer pacienteId,
             @RequestParam BigDecimal pontos,
             @RequestParam String descricao) {
         PacienteResponseDTO updatedPaciente = pacienteService.deduzirPontos(pacienteId, pontos, descricao);
@@ -84,11 +103,51 @@ public ResponseEntity<PacienteResponseDTO> comprarPontos(
     @PreAuthorize("hasAuthority('FUNCIONARIO')")
     @PutMapping("/{pacienteId}/adicionar-pontos")
     public ResponseEntity<PacienteResponseDTO> adicionarPontos(
-            @PathVariable UUID pacienteId,
+            @PathVariable Integer pacienteId,
             @RequestParam BigDecimal pontos,
             @RequestParam String descricao,
             @RequestParam OrigemTransacaoPonto origem) {
         PacienteResponseDTO updatedPaciente = pacienteService.adicionarPontos(pacienteId, pontos, descricao, origem);
         return ResponseEntity.ok(updatedPaciente);
+    }
+
+    // Endpoint para buscar detalhes de um paciente específico (para dashboard)
+    @PreAuthorize("hasAnyAuthority('PACIENTE', 'FUNCIONARIO')")
+    @GetMapping("/{pacienteId}")
+    public ResponseEntity<PacienteResponseDTO> buscarPacientePorId(
+            @PathVariable Integer pacienteId,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String userRole = jwt.getClaim("tipo");
+        if ("PACIENTE".equals(userRole)) {
+            Integer usuarioId = ((Number) jwt.getClaim("id")).intValue();
+            if (!pacienteService.pacientePertenceAoUsuario(pacienteId, usuarioId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+
+        PacienteResponseDTO paciente = pacienteService.buscarPorId(pacienteId);
+        return ResponseEntity.ok(paciente);
+    }
+
+    // Endpoint para buscar agendamentos de um paciente (placeholder - aguardando MS Consulta)
+    @PreAuthorize("hasAnyAuthority('PACIENTE', 'FUNCIONARIO')")
+    @GetMapping("/{pacienteId}/agendamentos")
+    public ResponseEntity<?> buscarAgendamentosPaciente(
+            @PathVariable Integer pacienteId,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String userRole = jwt.getClaim("tipo");
+        if ("PACIENTE".equals(userRole)) {
+            Integer usuarioId = ((Number) jwt.getClaim("id")).intValue();
+            if (!pacienteService.pacientePertenceAoUsuario(pacienteId, usuarioId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+
+        // TODO: Integração com MS Consulta para buscar agendamentos reais
+        // Por enquanto, retorna lista vazia
+        java.util.List<Object> agendamentos = java.util.Collections.emptyList();
+        return ResponseEntity.ok(agendamentos);
     }
 }

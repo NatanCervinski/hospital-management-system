@@ -1,0 +1,52 @@
+// Buy Points Modal Component Styles
+
+.modal-header {
+  border-bottom: 2px solid #0056b3;
+}
+
+.modal-title {
+  font-weight: 600;
+}
+
+.bg-success.bg-opacity-10 {
+  background-color: rgba(25, 135, 84, 0.1) !important;
+}
+
+// Custom styling for number input
+input[type="number"] {
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  &[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+// Enhance the calculated cost display
+.text-success h3 {
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+// Button hover effects
+.btn-success {
+  transition: all 0.3s ease;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(25, 135, 84, 0.3);
+  }
+}
+
+// Loading spinner animation
+.spinner-border-sm {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

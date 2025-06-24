@@ -27,8 +27,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TransacaoPonto {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "paciente_id", nullable = false)

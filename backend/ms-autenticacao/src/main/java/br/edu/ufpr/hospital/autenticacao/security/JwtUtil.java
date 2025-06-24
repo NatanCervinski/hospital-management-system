@@ -129,7 +129,7 @@ public class JwtUtil {
    * Extrai informações específicas do usuário do token
    */
   public Integer extractUserId(String token) {
-    return extractClaim(token, claims -> (Integer) claims.get("id"));
+    return extractClaim(token, claims -> ((Number) claims.get("id")).intValue());
   }
 
   public String extractUserName(String token) {

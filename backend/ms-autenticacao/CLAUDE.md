@@ -8,7 +8,7 @@ This is a Spring Boot microservice for authentication in a hospital management s
 
 ## Key Technologies
 
-- **Java 21** with Spring Boot 3.4.5
+- **Java 17** with Spring Boot 3.4.5
 - **PostgreSQL** database with JPA/Hibernate
 - **Redis** for JWT token blacklisting
 - **JWT** authentication with custom security configuration

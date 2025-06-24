@@ -1,46 +1,47 @@
-# ms-paciente/docker-compose.yml (Temporário)
 services:
-  # Microsserviço de Paciente
+  # Serviço do Microsserviço de Paciente
   ms-paciente:
-    build:
-      context: . # O Dockerfile está na pasta atual (ms-paciente)
-      dockerfile: Dockerfile
-    container_name: ms-paciente-dev
+    build: . # Onde o Dockerfile do ms-paciente está (diretório atual)
+    container_name: ms-paciente-app
     ports:
-      - "8082:8080" # Porta do contêiner:porta do host
-    environment:
-      # Variáveis de ambiente para o Spring Boot do MS de Paciente
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db-paciente-dev:5432/mspacientedb
-      SPRING_DATASOURCE_USERNAME: user_paciente
-      SPRING_DATASOURCE_PASSWORD: password_paciente
-      # Chave secreta JWT (a mesma que você usará no MS de Autenticação para validação)
-      JWT_SECRET: "minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem"
-      VIACEP_BASE_URL: https://viacep.com.br/ws/
-    depends_on:
-      - db-paciente-dev # Garante que o banco de dados inicie antes
+      - "8083:8083" # Mapeia porta do host (8083) para a porta do contêiner (8083)
+    environment: # Variáveis de ambiente para o contêiner
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ms-paciente-db:5432/hospital_paciente # O nome do host é o nome do serviço do banco de dados no docker-compose
+      SPRING_DATASOURCE_USERNAME: dac
+      SPRING_DATASOURCE_PASSWORD: 123
+      JWT_SECRET: minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem # Importante: Mesma chave do MS Autenticacao
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_SECRET_KEY: minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem
+      # Para o ambiente de produção, é altamente recomendável usar variáveis de ambiente ou um gerenciador de segredos para JWT_SECRET.
+    depends_on: # Garante que os serviços dependentes iniciem primeiro.
+      ms-paciente-db:
+        condition: service_healthy # Espera o DB estar saudável
     networks:
-      - hospital-net # Rede isolada para este ambiente de teste
+      - hospital-net # Conecta à rede definida
 
-  # Banco de Dados do Microsserviço de Paciente
-  db-paciente-dev:
-    image: postgres:15-alpine # Imagem oficial do PostgreSQL (versão 15, leve)
-    container_name: db-paciente-dev
+  # Serviço do Banco de Dados PostgreSQL para Paciente
+  ms-paciente-db:
+    image: postgres:16-alpine # Imagem oficial do PostgreSQL
+    container_name: ms-paciente-db
     environment:
-      POSTGRES_DB: mspacientedb
-      POSTGRES_USER: user_paciente
-      POSTGRES_PASSWORD: password_paciente
-    volumes:
-      - db-paciente-data-dev:/var/lib/postgresql/data # Volume para persistir os dados
+      POSTGRES_DB: hospital_paciente
+      POSTGRES_USER: dac
+      POSTGRES_PASSWORD: 123
     ports:
-      - "5434:5432" # Mapeia a porta 5432 do contêiner para 5434 do host
+      - "5434:5432" # Porta para acesso externo (diferente do MS Autenticacao que usa 5432)
+    volumes:
+      - paciente_db_data:/var/lib/postgresql/data # Volume para persistir dados do PostgreSQL
+    healthcheck: # Healthcheck para o Compose esperar que o DB esteja pronto antes de iniciar o ms-paciente
+      test: ["CMD-SHELL", "pg_isready -U dac -d hospital_paciente"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s # Tempo para o contêiner iniciar antes de começar a testar
     networks:
       - hospital-net
 
-# Definição da rede
-networks:
-  hospital-net:
-    external: true
-
-# Definição do volume para persistência de dados do banco
 volumes:
-  db-paciente-data-dev:
+  paciente_db_data: # Define o volume nomeado para persistência do DB
+
+networks:
+  hospital-net: # Define uma rede interna para os contêineres se comunicarem
+    driver: bridge

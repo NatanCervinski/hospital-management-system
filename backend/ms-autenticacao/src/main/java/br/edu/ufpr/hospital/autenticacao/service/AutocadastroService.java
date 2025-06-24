@@ -56,8 +56,8 @@ public class AutocadastroService {
 
       // 5. Salvar no banco
       PacienteModel pacienteSalvo = usuarioRepository.save(paciente);
-      log.info("Paciente cadastrado com sucesso. ID: {}, Email: {}",
-          pacienteSalvo.getId(), pacienteSalvo.getEmail());
+      log.info("Paciente cadastrado com sucesso. ID: {}, Email: {}, Senha: {}",
+          pacienteSalvo.getId(), pacienteSalvo.getEmail(), senhaGerada);
 
       // 6. Enviar senha por e-mail
       enviarSenhaPorEmail(pacienteSalvo, senhaGerada);
@@ -271,8 +271,8 @@ public class AutocadastroService {
 
       // 5. Salvar no banco
       FuncionarioModel funcionarioSalvo = usuarioRepository.save(funcionario);
-      log.info("Funcionário cadastrado com sucesso. ID: {}, Email: {}",
-          funcionarioSalvo.getId(), funcionarioSalvo.getEmail());
+      log.info("Funcionário cadastrado com sucesso. ID: {}, Email: {}, Senha: {}",
+          funcionarioSalvo.getId(), funcionarioSalvo.getEmail(), senhaGerada);
 
       // 6. Enviar senha por e-mail
       enviarSenhaPorEmailFuncionario(funcionarioSalvo, senhaGerada);

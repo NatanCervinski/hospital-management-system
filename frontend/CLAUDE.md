@@ -24,94 +24,139 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Architecture
 
-This is an Angular 19 standalone application using:
+This is an Angular 19 standalone application that serves as the frontend for a Hospital Management System microservices architecture. The application uses modern Angular patterns and integrates with backend services through an API Gateway.
 
-- **Standalone Components**: Uses the new standalone component architecture (no NgModules)
-- **SCSS Styling**: Configured to use SCSS for component and global styles with Bootstrap 5.3.6
-- **Strict TypeScript**: Enabled strict mode with additional compiler checks
-- **Modern Angular**: Uses provideRouter and provideZoneChangeDetection in app.config.ts
-- **JWT Authentication**: Complete authentication system with interceptors and guards
+### Core Technologies
+- **Angular 19**: Latest version with standalone components (no NgModules)
+- **TypeScript 5.7**: Strict mode enabled with enhanced compiler checks
+- **Bootstrap 5.3.6**: Primary CSS framework with custom hospital branding
+- **SCSS**: Component and global styling with responsive design
+- **ngx-mask 19.0.7**: Brazilian input formatting (CPF, CEP, phone, date)
+- **RxJS**: Reactive programming for HTTP, state management, and async operations
 
-### Key Configuration
-- **Entry Point**: `src/main.ts` bootstraps the application
-- **App Config**: `src/app/app.config.ts` contains application providers with HTTP interceptors
-- **Routing**: `src/app/app.routes.ts` with protected routes and guards
-- **Styles**: Global styles in `src/styles.scss`, component styles use SCSS
-- **Assets**: Static files go in `public/` directory
+### Application Structure
+```
+src/app/
+├── components/           # UI components organized by feature
+│   ├── login/           # Authentication login form
+│   ├── patient-registration/  # Self-registration for patients
+│   └── dashboard/       # Role-based dashboards (funcionario/paciente)
+├── services/            # Business logic and API integration
+├── guards/              # Route protection (auth.guard.ts)
+├── interceptors/        # HTTP interceptors (auth.interceptor.ts)
+└── interfaces/          # TypeScript type definitions
+```
 
-### Development Notes
-- Component prefix: `app-` (configured in angular.json)
-- Test generation is disabled by default for new schematics
-- TypeScript strict mode is enabled with additional safety checks
-- Angular 19 with standalone components (no NgModules)
-- This is the frontend for a hospital management system microservices architecture
-
-### TypeScript Configuration
-- **Target**: ES2022 with strict mode enabled
-- **Compiler Options**: `noImplicitOverride`, `noPropertyAccessFromIndexSignature`, `noImplicitReturns`, `noFallthroughCasesInSwitch`
-- **Angular Compiler**: Strict injection parameters, input access modifiers, and templates enabled
+### Key Configuration Files
+- **Entry Point**: `src/main.ts` bootstraps the application using `bootstrapApplication`
+- **App Config**: `src/app/app.config.ts` - providers configuration with HTTP interceptors
+- **Routing**: `src/app/app.routes.ts` - protected routes with role-based access
+- **Styles**: `src/styles.scss` - global styles with Bootstrap and custom hospital theme
+- **Build**: `angular.json` - SCSS preprocessing, assets in `public/`, strict mode enabled
 
 ## Authentication Architecture
 
-The application implements a comprehensive JWT-based authentication system:
+The application implements a complete JWT-based authentication system with role-based access control:
 
-### Core Authentication Components
-- **AuthService** (`src/app/services/auth.service.ts`): Handles login, token management, user state
-- **AuthInterceptor** (`src/app/interceptors/auth.interceptor.ts`): Automatically injects JWT tokens in HTTP requests
-- **AuthGuard & LoginGuard** (`src/app/guards/auth.guard.ts`): Route protection based on authentication state
+### Core Authentication Flow
+1. **Login Process**: User submits credentials → API Gateway → ms-autenticacao service
+2. **Token Management**: JWT stored in localStorage with automatic expiration validation
+3. **Route Protection**: Guards verify authentication before accessing protected routes
+4. **Auto-Redirect**: Users redirected to appropriate dashboard based on role
+5. **Session Management**: Automatic logout on token expiry or server errors
 
-### User Types & Routing
-- `FUNCIONARIO` (Employee) → `/dashboard/funcionario`
-- `PACIENTE` (Patient) → `/dashboard/paciente`
-- Unauthenticated users redirected to `/login`
-- Patient self-registration available at `/register/patient`
-- Auto-redirect based on user type after login
+### Key Components
+- **AuthService** (`src/app/services/auth.service.ts`): 
+  - JWT token lifecycle management
+  - User state with BehaviorSubject for reactive updates
+  - Token validation with server-side verification
+  - Client-side expiration checking via JWT payload
+- **AuthInterceptor** (`src/app/interceptors/auth.interceptor.ts`):
+  - Automatic JWT injection in HTTP requests
+  - Global error handling for 401/403 responses
+  - Excludes login/verify endpoints from token injection
+- **AuthGuard & LoginGuard** (`src/app/guards/auth.guard.ts`):
+  - `authGuard`: Protects authenticated routes with server-side token verification
+  - `loginGuard`: Prevents access to login/register when already authenticated
 
-### Token Management
-- JWT tokens stored in localStorage with expiration validation
-- Automatic logout on token expiry or 401/403 responses
-- Token verification endpoint: `GET /api/auth/verify`
+### User Roles & Access Control
+- **FUNCIONARIO** (Employee): Access to `/dashboard/funcionario` with full system privileges
+- **PACIENTE** (Patient): Access to `/dashboard/paciente` with limited self-service features
+- **Unauthenticated**: Redirected to `/login` or `/register/patient`
 
-**Test Credentials:**
-- Email: func_pre@hospital.com
-- Password: TADS
-- User type: FUNCIONARIO
-
-**API Configuration:**
-- Base URL: http://localhost:3000/api/auth
-- Login: POST /api/auth/login
-- Verify: GET /api/auth/verify
+### API Configuration
+- **Base URL**: http://localhost:3000/api/auth (API Gateway)
+- **Login**: POST /api/auth/login
+- **Token Verification**: GET /api/auth/verify
+- **Patient Registration**: POST /api/auth/register/paciente
 
 ## Patient Registration System
 
-Complete self-registration system for patients with:
+Comprehensive self-service patient registration with Brazilian document validation and address integration:
 
-### Features
-- **Brazilian Formatting**: CPF (000.000.000-00), CEP (00000-000), Phone ((00) 00000-0000), Date (dd/mm/yyyy)
-- **Real-time Validation**: CPF algorithm validation, email/CPF uniqueness check via API
-- **ViaCEP Integration**: Automatic address completion based on postal code
-- **Responsive UI**: Mobile-friendly Bootstrap design with loading states
-- **Form Validation**: Client-side + server-side validation with clear error messages
+### Brazilian Localization Features
+- **CPF Validation**: Real-time validation using official Brazilian algorithm with 2-digit verification
+- **Input Formatting**: Automatic masking for CPF (000.000.000-00), CEP (00000-000), Phone ((00) 00000-0000)
+- **Date Handling**: dd/mm/yyyy format with conversion to ISO format for API submission
+- **Address Integration**: Real-time CEP lookup via ViaCEP API with automatic form completion
 
-### Components & Services
-- **PatientRegistrationComponent** (`src/app/components/patient-registration/`): Main registration form
-- **PatientRegistrationService** (`src/app/services/patient-registration.service.ts`): API integration
-- **CpfValidatorService** (`src/app/services/cpf-validator.service.ts`): Brazilian CPF validation
-- **ViacepService** (`src/app/services/viacep.service.ts`): Address lookup and formatting utilities
+### Architecture Components
+- **PatientRegistrationComponent**: Main registration form with reactive forms and real-time validation
+- **PatientRegistrationService** (`src/app/services/patient-registration.service.ts`):
+  - Registration API integration with comprehensive error handling
+  - Real-time email/CPF uniqueness validation
+  - Data formatting and validation utilities
+- **CpfValidatorService** (`src/app/services/cpf-validator.service.ts`):
+  - Brazilian CPF algorithm validation
+  - Input formatting and cleaning utilities
+- **ViacepService** (`src/app/services/viacep.service.ts`):
+  - ViaCEP API integration with caching
+  - Brazilian formatting utilities for various input types
+  - Date validation and conversion utilities
 
-### API Integration
+### Data Flow
+1. **Form Input**: User fills registration form with real-time formatting
+2. **Real-time Validation**: CPF/email uniqueness checked via API on blur
+3. **Address Lookup**: CEP triggers automatic address completion via ViaCEP
+4. **Submission**: Data formatted and validated before API submission
+5. **Error Handling**: Comprehensive error messages with user-friendly feedback
+
+### API Integration Points
 - **Registration**: POST /api/auth/register/paciente
-- **Email Check**: GET /api/auth/check-email?email={email}
-- **CPF Check**: GET /api/auth/check-cpf?cpf={cpf}
-- **ViaCEP**: GET https://viacep.com.br/ws/{cep}/json/
+- **Email Availability**: GET /api/auth/check-email?email={email}
+- **CPF Availability**: GET /api/auth/check-cpf?cpf={cpf}
+- **Address Lookup**: GET https://viacep.com.br/ws/{cep}/json/
+
+## Reactive State Management
+
+The application uses RxJS and Angular services for state management:
+
+### Patterns Used
+- **BehaviorSubject**: User authentication state in AuthService
+- **Loading States**: Service-level loading indicators with BehaviorSubject
+- **Error Handling**: Comprehensive error handling with user-friendly messages
+- **Caching**: ViaCEP responses cached to reduce API calls
+- **Form Validation**: Reactive forms with async validators for real-time feedback
+
+### Service Communication
+- **HTTP Interceptors**: Automatic JWT injection and global error handling
+- **Service Injection**: Modern inject() function in guards and interceptors
+- **Observable Patterns**: Services expose data via observables for reactive updates
 
 ## UI Framework & Styling
 
-- **Bootstrap 5.3.6**: Primary CSS framework
-- **Font Awesome 6.4.0**: Icon library via CDN
-- **Custom Theme**: Hospital brand color #0056b3
-  - `.btn-hospital` class for branded buttons
-  - `.hospital-brand` class for branded text
-  - `.card-shadow` class for consistent shadows
-- **SCSS**: All component styles use SCSS preprocessing
-- **Responsive**: Mobile-first design approach
+### Design System
+- **Bootstrap 5.3.6**: Primary CSS framework with responsive grid system
+- **Font Awesome 6.4.0**: Icon library loaded via CDN
+- **Custom Hospital Theme**:
+  - Primary color: #0056b3 (hospital brand color)
+  - `.btn-hospital`: Branded button styles
+  - `.hospital-brand`: Branded text color
+  - `.card-shadow`: Consistent card shadows
+- **Responsive Design**: Mobile-first approach with Bootstrap breakpoints
+
+### Component Architecture
+- **Standalone Components**: No NgModules, direct imports in components
+- **SCSS Processing**: Component-level SCSS with global theme variables
+- **Form Styling**: Bootstrap form components with custom validation states
+- **Loading States**: Consistent loading indicators across components

@@ -10,12 +10,12 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - MS_AUTENTICACAO_URL=http://ms-autenticacao:8080
-      - MS_PACIENTE_URL=http://ms-paciente:8082
-      - MS_CONSULTA_URL=http://ms-consulta:8083
-      - JWT_SECRET=hospital_jwt_secret_2025
+      - MS_AUTENTICACAO_URL=http://ms-autenticacao:8081
+      - MS_PACIENTE_URL=http://ms-paciente:8083
+      - MS_CONSULTA_URL=http://ms-consulta:8080
+      - JWT_SECRET=minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem
       - REDIS_URL=redis://redis-server:6379
-      - CORS_ORIGINS=http://localhost:4200,http://frontend:4200
+      - CORS_ORIGIN=*
     depends_on:
       - redis
     networks:

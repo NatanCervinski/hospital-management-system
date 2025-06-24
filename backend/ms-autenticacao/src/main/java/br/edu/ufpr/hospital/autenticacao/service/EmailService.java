@@ -234,6 +234,7 @@ public class EmailService {
       helper.setTo(destinatario);
       helper.setSubject(assunto);
       helper.setText(corpo, true); // true = é HTML
+      log.info(corpo);
 
       // Enviar email real
       mailSender.send(message);
@@ -242,6 +243,8 @@ public class EmailService {
       return true;
 
     } catch (Exception e) {
+
+      log.info(corpo);
       log.error("❌ Falha no envio de e-mail para {}: {}", destinatario, e.getMessage());
       return false;
     }
