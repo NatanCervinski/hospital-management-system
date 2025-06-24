@@ -1,0 +1,384 @@
+<div class="container-fluid bg-light min-vh-100 py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8 col-xl-6">
+      <div class="card card-shadow">
+        <div class="card-header bg-white text-center py-4">
+          <h2 class="hospital-brand mb-2">
+            <i class="fas fa-user-plus me-2"></i>
+            Cadastro de Paciente
+          </h2>
+          <p class="text-muted mb-0">Preencha os dados para criar sua conta</p>
+        </div>
+
+        <div class="card-body p-4">
+          <!-- Success Message -->
+          <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            {{ successMessage }}
+            <div *ngIf="redirectCountdown > 0" class="mt-2">
+              <small>Redirecionando em {{ redirectCountdown }} segundos...</small>
+            </div>
+          </div>
+
+          <!-- Error Message -->
+          <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            {{ errorMessage }}
+            <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
+          </div>
+
+          <!-- Registration Form -->
+          <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()" *ngIf="!successMessage">
+            
+            <!-- Personal Information Section -->
+            <div class="mb-4">
+              <h5 class="hospital-brand border-bottom pb-2 mb-3">
+                <i class="fas fa-user me-2"></i>
+                Informações Pessoais
+              </h5>
+
+              <div class="row">
+                <!-- Nome -->
+                <div class="col-12 col-md-6 mb-3">
+                  <label for="nome" class="form-label">Nome Completo <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-user"></i>
+                    </span>
+                    <input
+                      type="text"
+                      id="nome"
+                      class="form-control"
+                      [class.is-valid]="isFieldValid('nome')"
+                      [class.is-invalid]="isFieldInvalid('nome')"
+                      formControlName="nome"
+                      placeholder="Digite seu nome completo"
+                      maxlength="100">
+                  </div>
+                  <div *ngIf="getFieldError('nome')" class="invalid-feedback d-block">
+                    {{ getFieldError('nome') }}
+                  </div>
+                </div>
+
+                <!-- CPF -->
+                <div class="col-12 col-md-6 mb-3">
+                  <label for="cpf" class="form-label">CPF <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-id-card"></i>
+                    </span>
+                    <input
+                      type="text"
+                      id="cpf"
+                      class="form-control"
+                      [class.is-valid]="isFieldValid('cpf')"
+                      [class.is-invalid]="isFieldInvalid('cpf')"
+                      formControlName="cpf"
+                      placeholder="000.000.000-00"
+                      maxlength="14">
+                    <span *ngIf="isFieldPending('cpf')" class="input-group-text">
+                      <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                  </div>
+                  <div *ngIf="getFieldError('cpf')" class="invalid-feedback d-block">
+                    {{ getFieldError('cpf') }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <!-- Email -->
+                <div class="col-12 col-md-6 mb-3">
+                  <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-envelope"></i>
+                    </span>
+                    <input
+                      type="email"
+                      id="email"
+                      class="form-control"
+                      [class.is-valid]="isFieldValid('email')"
+                      [class.is-invalid]="isFieldInvalid('email')"
+                      formControlName="email"
+                      placeholder="seu@email.com"
+                      maxlength="100">
+                    <span *ngIf="isFieldPending('email')" class="input-group-text">
+                      <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                  </div>
+                  <div *ngIf="getFieldError('email')" class="invalid-feedback d-block">
+                    {{ getFieldError('email') }}
+                  </div>
+                </div>
+
+                <!-- Data de Nascimento -->
+                <div class="col-12 col-md-6 mb-3">
+                  <label for="dataNascimento" class="form-label">Data de Nascimento <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-calendar"></i>
+                    </span>
+                    <input
+                      type="text"
+                      id="dataNascimento"
+                      class="form-control"
+                      [class.is-valid]="isFieldValid('dataNascimento')"
+                      [class.is-invalid]="isFieldInvalid('dataNascimento')"
+                      formControlName="dataNascimento"
+                      placeholder="dd/mm/aaaa"
+                      maxlength="10">
+                  </div>
+                  <div *ngIf="getFieldError('dataNascimento')" class="invalid-feedback d-block">
+                    {{ getFieldError('dataNascimento') }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Telefone -->
+              <div class="row">
+                <div class="col-12 col-md-6 mb-3">
+                  <label for="telefone" class="form-label">Telefone <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-phone"></i>
+                    </span>
+                    <input
+                      type="text"
+                      id="telefone"
+                      class="form-control"
+                      [class.is-valid]="isFieldValid('telefone')"
+                      [class.is-invalid]="isFieldInvalid('telefone')"
+                      formControlName="telefone"
+                      placeholder="(00) 00000-0000"
+                      maxlength="15">
+                  </div>
+                  <div *ngIf="getFieldError('telefone')" class="invalid-feedback d-block">
+                    {{ getFieldError('telefone') }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Address Information Section -->
+            <div class="mb-4">
+              <h5 class="hospital-brand border-bottom pb-2 mb-3">
+                <i class="fas fa-map-marker-alt me-2"></i>
+                Endereço
+              </h5>
+
+              <div class="row">
+                <!-- CEP -->
+                <div class="col-12 col-md-4 mb-3">
+                  <label for="cep" class="form-label">CEP <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-map-pin"></i>
+                    </span>
+                    <input
+                      type="text"
+                      id="cep"
+                      class="form-control"
+                      [class.is-valid]="isFieldValid('cep')"
+                      [class.is-invalid]="isFieldInvalid('cep')"
+                      formControlName="cep"
+                      placeholder="00000-000"
+                      maxlength="9">
+                    <span *ngIf="cepLoading" class="input-group-text">
+                      <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                  </div>
+                  <div *ngIf="getFieldError('cep')" class="invalid-feedback d-block">
+                    {{ getFieldError('cep') }}
+                  </div>
+                  <small class="form-text text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Digite o CEP para preenchimento automático
+                  </small>
+                </div>
+
+                <!-- Logradouro -->
+                <div class="col-12 col-md-8 mb-3">
+                  <label for="logradouro" class="form-label">Logradouro <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-road"></i>
+                    </span>
+                    <input
+                      type="text"
+                      id="logradouro"
+                      class="form-control"
+                      [class.is-valid]="isFieldValid('logradouro')"
+                      [class.is-invalid]="isFieldInvalid('logradouro')"
+                      formControlName="logradouro"
+                      placeholder="Nome da rua, avenida, etc."
+                      maxlength="100">
+                  </div>
+                  <div *ngIf="getFieldError('logradouro')" class="invalid-feedback d-block">
+                    {{ getFieldError('logradouro') }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <!-- Número -->
+                <div class="col-12 col-md-3 mb-3">
+                  <label for="numero" class="form-label">Número <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-hashtag"></i>
+                    </span>
+                    <input
+                      type="text"
+                      id="numero"
+                      class="form-control"
+                      [class.is-valid]="isFieldValid('numero')"
+                      [class.is-invalid]="isFieldInvalid('numero')"
+                      formControlName="numero"
+                      placeholder="123"
+                      maxlength="10">
+                  </div>
+                  <div *ngIf="getFieldError('numero')" class="invalid-feedback d-block">
+                    {{ getFieldError('numero') }}
+                  </div>
+                </div>
+
+                <!-- Complemento -->
+                <div class="col-12 col-md-4 mb-3">
+                  <label for="complemento" class="form-label">Complemento</label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-plus"></i>
+                    </span>
+                    <input
+                      type="text"
+                      id="complemento"
+                      class="form-control"
+                      formControlName="complemento"
+                      placeholder="Apto, Bloco, etc."
+                      maxlength="50">
+                  </div>
+                </div>
+
+                <!-- Bairro -->
+                <div class="col-12 col-md-5 mb-3">
+                  <label for="bairro" class="form-label">Bairro <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-building"></i>
+                    </span>
+                    <input
+                      type="text"
+                      id="bairro"
+                      class="form-control"
+                      [class.is-valid]="isFieldValid('bairro')"
+                      [class.is-invalid]="isFieldInvalid('bairro')"
+                      formControlName="bairro"
+                      placeholder="Nome do bairro"
+                      maxlength="50">
+                  </div>
+                  <div *ngIf="getFieldError('bairro')" class="invalid-feedback d-block">
+                    {{ getFieldError('bairro') }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <!-- Cidade -->
+                <div class="col-12 col-md-8 mb-3">
+                  <label for="cidade" class="form-label">Cidade <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-city"></i>
+                    </span>
+                    <input
+                      type="text"
+                      id="cidade"
+                      class="form-control"
+                      [class.is-valid]="isFieldValid('cidade')"
+                      [class.is-invalid]="isFieldInvalid('cidade')"
+                      formControlName="cidade"
+                      placeholder="Nome da cidade"
+                      maxlength="50">
+                  </div>
+                  <div *ngIf="getFieldError('cidade')" class="invalid-feedback d-block">
+                    {{ getFieldError('cidade') }}
+                  </div>
+                </div>
+
+                <!-- Estado -->
+                <div class="col-12 col-md-4 mb-3">
+                  <label for="estado" class="form-label">Estado <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-flag"></i>
+                    </span>
+                    <input
+                      type="text"
+                      id="estado"
+                      class="form-control"
+                      [class.is-valid]="isFieldValid('estado')"
+                      [class.is-invalid]="isFieldInvalid('estado')"
+                      formControlName="estado"
+                      placeholder="UF"
+                      maxlength="2">
+                  </div>
+                  <div *ngIf="getFieldError('estado')" class="invalid-feedback d-block">
+                    {{ getFieldError('estado') }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <button
+                type="button"
+                class="btn btn-outline-secondary me-md-2"
+                (click)="goToLogin()"
+                [disabled]="loading">
+                <i class="fas fa-arrow-left me-2"></i>
+                Voltar ao Login
+              </button>
+              <button
+                type="submit"
+                class="btn btn-hospital"
+                [disabled]="loading || registrationForm.invalid">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                <i *ngIf="!loading" class="fas fa-user-plus me-2"></i>
+                {{ loading ? 'Cadastrando...' : 'Criar Conta' }}
+              </button>
+            </div>
+
+            <!-- Required Fields Notice -->
+            <div class="text-center mt-3">
+              <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Campos marcados com <span class="text-danger">*</span> são obrigatórios
+              </small>
+            </div>
+          </form>
+
+          <!-- Success Action Buttons -->
+          <div *ngIf="successMessage" class="text-center mt-4">
+            <button
+              type="button"
+              class="btn btn-hospital"
+              (click)="goToLogin()">
+              <i class="fas fa-sign-in-alt me-2"></i>
+              Ir para Login
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Information -->
+      <div class="text-center mt-4">
+        <small class="text-muted">
+          <i class="fas fa-shield-alt me-1"></i>
+          Seus dados estão seguros e protegidos
+        </small>
+      </div>
+    </div>
+  </div>
+</div>

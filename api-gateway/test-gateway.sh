@@ -60,27 +60,64 @@ else
   echo -e "${RED}Falha ao obter token${NC}"
 fi
 
+# Teste de validação de email
+print_header "4. Validação de Email"
+print_info "Testando: GET $BASE_URL/api/auth/check-email?email=test@example.com"
+curl -s -f "$BASE_URL/api/auth/check-email?email=test@example.com" | jq .
+print_result
+
+# Teste de validação de CPF
+print_header "5. Validação de CPF"
+print_info "Testando: GET $BASE_URL/api/auth/check-cpf?cpf=12345678901"
+curl -s -f "$BASE_URL/api/auth/check-cpf?cpf=12345678901" | jq .
+print_result
+
+# Teste de registro de paciente
+print_header "6. Registro de Paciente"
+print_info "Testando: POST $BASE_URL/api/auth/register/paciente"
+PATIENT_DATA='{
+  "nome": "João Silva Teste",
+  "cpf": "98765432100",
+  "email": "joao.teste@example.com",
+  "cep": "80010000",
+  "logradouro": "Rua Teste",
+  "numero": "123",
+  "complemento": "Apto 1",
+  "bairro": "Centro",
+  "cidade": "Curitiba",
+  "estado": "PR",
+  "dataNascimento": "1990-01-01",
+  "telefone": "(41) 99999-9999"
+}'
+
+PATIENT_RESPONSE=$(curl -s -X POST "$BASE_URL/api/auth/register/paciente" \
+  -H "Content-Type: application/json" \
+  -d "$PATIENT_DATA")
+
+echo "$PATIENT_RESPONSE" | jq .
+print_result
+
 # Teste de endpoint protegido
 if [ -n "$AUTH_TOKEN" ]; then
-  print_header "4. Endpoint Protegido - Funcionários"
+  print_header "7. Endpoint Protegido - Funcionários"
   print_info "Testando: GET $BASE_URL/api/funcionarios"
   curl -s -H "Authorization: Bearer $AUTH_TOKEN" "$BASE_URL/api/funcionarios" | jq .
   print_result
 
-  print_header "5. Verificação de Token"
+  print_header "8. Verificação de Token"
   print_info "Testando: GET $BASE_URL/api/auth/verify"
   curl -s -H "Authorization: Bearer $AUTH_TOKEN" "$BASE_URL/api/auth/verify" | jq .
   print_result
 fi
 
 # Teste de rota não encontrada
-print_header "6. Teste de Rota Não Encontrada"
+print_header "9. Teste de Rota Não Encontrada"
 print_info "Testando: GET $BASE_URL/api/rota-inexistente"
 curl -s "$BASE_URL/api/rota-inexistente" | jq .
 print_result
 
 # Teste de rate limiting (muitas requisições rápidas)
-print_header "7. Teste de Rate Limiting"
+print_header "10. Teste de Rate Limiting"
 print_info "Fazendo múltiplas requisições rápidas..."
 for i in {1..5}; do
   curl -s -o /dev/null -w "Req $i: %{http_code}\n" "$BASE_URL/health"

@@ -9,23 +9,23 @@ This is the API Gateway component of a Hospital Management System (Sistema de Ge
 ### Architecture
 
 The system consists of:
-- **api-gateway/**: Node.js API Gateway (this component - currently in early development)
+- **api-gateway/**: Node.js API Gateway (this component - Express.js with JWT authentication)
 - **backend/**: Spring Boot microservices
   - `ms-autenticacao/`: Authentication microservice (port 8081)
-  - `ms-paciente/`: Patient management microservice
-  - `ms-consulta/`: Consultation/scheduling microservice
+  - `ms-paciente/`: Patient management microservice (port 8082)
+  - `ms-consulta/`: Consultation/scheduling microservice (port 8083)
 - **frontend/**: Angular 19 application
 - **db/**: Database scripts (PostgreSQL)
 - **docker/**: Docker configurations
 
 ### Technology Stack
 
-- **API Gateway**: Node.js (planned - directory currently empty)
+- **API Gateway**: Node.js with Express.js, JWT validation, rate limiting, CORS
 - **Backend**: Spring Boot 3.4.5 with Java 21
 - **Frontend**: Angular 19 with TypeScript
 - **Database**: PostgreSQL 16
 - **Caching**: Redis
-- **Authentication**: JWT with blacklist support
+- **Authentication**: JWT with blacklist support via Redis
 - **Containerization**: Docker with docker-compose
 
 ## Development Commands
@@ -62,13 +62,14 @@ npm run test     # Run tests
 ```bash
 cd api-gateway
 npm install
-npm run dev      # Development server (port 3000)
+npm run dev      # Development server with nodemon (port 3000)
 npm start        # Production server
-npm test         # Run tests
+npm test         # Run tests with Jest
 
 # Docker commands
 npm run docker:build
-docker-compose up -d
+npm run docker:run
+docker-compose up -d  # Full stack with dependencies
 
 # Test the gateway
 ./test-gateway.sh
@@ -82,10 +83,10 @@ docker-compose up -d
 - **Service Info**: GET /api
 
 ### Routes via Gateway:
-- **Authentication**: /api/auth/* → ms-autenticacao:8080
-- **Staff Management**: /api/funcionarios/* → ms-autenticacao:8080 (FUNCIONARIO only)
-- **Patient Management**: /api/pacientes/* → ms-paciente:8080
-- **Consultations**: /api/consultas/* → ms-consulta:8080
+- **Authentication**: /api/auth/* → ms-autenticacao:8081 (public routes)
+- **Staff Management**: /api/funcionarios/* → ms-autenticacao:8081 (FUNCIONARIO only)
+- **Patient Management**: /api/pacientes/* → ms-paciente:8082 (authenticated)
+- **Consultations**: /api/consultas/* → ms-consulta:8083 (role-based access)
 
 ### Authentication Service (ms-autenticacao)
 - **Login**: POST /api/auth/login
@@ -133,3 +134,37 @@ The authentication microservice includes comprehensive API tests in `testes.sh` 
 - All microservices follow Spring Boot conventions
 - PostgreSQL with data initialization scripts
 - Angular frontend uses modern standalone components
+
+## API Gateway Architecture
+
+### Key Components
+
+- **Authentication Middleware** (`src/middlewares/auth.js`): JWT validation with blacklist check via Redis
+- **Route Handlers** (`src/routes/`): Proxy requests to appropriate microservices
+- **Proxy Service** (`src/services/proxy.js`): HTTP proxy logic for microservice communication  
+- **Error Handling** (`src/middlewares/errorHandler.js`): Centralized error processing
+
+### Security Features
+
+- Rate limiting (100 requests per 15 minutes by default)
+- CORS protection with configurable origins
+- Helmet.js security headers
+- JWT token validation with blacklist support
+- Role-based access control (PACIENTE vs FUNCIONARIO)
+
+### Configuration
+
+Environment variables are configured via `.env` file (see `.env.example`):
+- Microservice URLs with Docker network support
+- JWT secrets and expiration
+- Rate limiting thresholds
+- CORS origins
+
+### Testing
+
+The `test-gateway.sh` script provides comprehensive testing including:
+- Health checks
+- Authentication flows
+- Protected endpoint access
+- Rate limiting verification
+- Error handling validation
