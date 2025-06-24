@@ -32,7 +32,7 @@ print_header "2. Autocadastro de Funcionário"
 http POST $BASE_URL/register/funcionario \
   nome="Funcionário Teste Auto" \
   cpf="12345678901" \
-  email="funcionario.auto@hospital.com" \
+  email="natanscer@gmail.com" \
   telefone="(41) 99999-9999" \
   cep="80000000" \
   cidade="Curitiba" \

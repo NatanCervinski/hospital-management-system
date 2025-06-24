@@ -325,44 +325,25 @@ public class AutocadastroService {
   }
 
   /**
-   * Envia senha por e-mail para o funcionário
+   * Envia senha por e-mail para o funcionário usando novo serviço de email
    */
   private void enviarSenhaPorEmailFuncionario(FuncionarioModel funcionario, String senhaGerada) {
     try {
-      log.info("Enviando senha por e-mail para funcionário: {}", funcionario.getEmail());
+      log.info("Enviando senha temporária para funcionário: {}", funcionario.getEmail());
 
-      String assunto = "Bem-vindo ao Sistema Hospitalar - Credenciais de Funcionário";
-      String corpo = construirCorpoEmailFuncionario(funcionario, senhaGerada);
+      // Usar novo método específico para senha temporária de funcionário
+      emailService.enviarSenhaTemporariaFuncionario(
+          funcionario.getEmail(), 
+          funcionario.getNome(), 
+          senhaGerada);
 
-      emailService.enviarEmail(funcionario.getEmail(), assunto, corpo);
-
-      log.info("E-mail enviado com sucesso para funcionário: {}", funcionario.getEmail());
+      log.debug("Solicitação de envio de e-mail processada para funcionário: {}", funcionario.getEmail());
 
     } catch (Exception e) {
-      log.error("Erro ao enviar e-mail para funcionário {}: {}", funcionario.getEmail(), e.getMessage());
+      log.error("Erro ao solicitar envio de e-mail para funcionário {}: {}", funcionario.getEmail(), e.getMessage());
       // Não falha o cadastro por erro de e-mail, mas registra o problema
+      // O envio é assíncrono, então erros específicos serão tratados no EmailService
     }
   }
 
-  /**
-   * Constrói o corpo do e-mail com a senha para funcionário
-   */
-  private String construirCorpoEmailFuncionario(FuncionarioModel funcionario, String senhaGerada) {
-    return String.format(
-        "Olá %s,\n\n" +
-            "Seu cadastro como funcionário no Sistema Hospitalar foi realizado com sucesso!\n\n" +
-            "Seus dados de acesso:\n" +
-            "E-mail: %s\n" +
-            "Senha: %s\n\n" +
-            "IMPORTANTE:\n" +
-            "- Esta é uma senha temporária de 4 dígitos\n" +
-            "- Mantenha-a em local seguro\n" +
-            "- Use estes dados para fazer login no sistema\n" +
-            "- Como funcionário, você tem acesso às funcionalidades administrativas\n\n" +
-            "Atenciosamente,\n" +
-            "Equipe do Sistema Hospitalar",
-        funcionario.getNome(),
-        funcionario.getEmail(),
-        senhaGerada);
-  }
 }

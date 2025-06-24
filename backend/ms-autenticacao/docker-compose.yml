@@ -1,5 +1,3 @@
-version: '3.8' # Versão da sintaxe do Compose
-
 services:
   # Serviço do Microsserviço de Autenticação
   ms-autenticacao:
