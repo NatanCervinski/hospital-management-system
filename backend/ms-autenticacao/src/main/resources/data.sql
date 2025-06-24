@@ -6,5 +6,6 @@ INSERT INTO usuario (nome, cpf, email, senha, salt, ativo, data_cadastro, perfil
   '73095e14962319bd781e32f2024787fa',
   true,
   NOW(),
-  'FUNCIONARIO'
+  'FUNCIONARIO',
+  0
 );
