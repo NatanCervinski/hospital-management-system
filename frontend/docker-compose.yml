@@ -1,0 +1,20 @@
+services:
+  # Frontend Angular Application
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hospital-frontend
+    ports:
+      - "4200:4200"
+    environment:
+      - NODE_ENV=development
+      - API_GATEWAY_URL=http://localhost:3000
+    networks:
+      - hospital-net
+    restart: unless-stopped
+
+networks:
+  hospital-net:
+    external: true
+    name: ms-autenticacao_hospital-net

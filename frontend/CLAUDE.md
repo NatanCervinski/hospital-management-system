@@ -15,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Testing  
 - `npm test` or `ng test` - Run unit tests with Karma/Jasmine
 - Tests are disabled by default in angular.json schematics (skipTests: true)
+- No end-to-end testing framework is currently configured
 
 ### Code Generation
 - `ng generate component component-name` - Generate new component
@@ -42,8 +43,13 @@ This is an Angular 19 standalone application using:
 - Component prefix: `app-` (configured in angular.json)
 - Test generation is disabled by default for new schematics
 - TypeScript strict mode is enabled with additional safety checks
-- Uses ngx-mask for input masking
+- Angular 19 with standalone components (no NgModules)
 - This is the frontend for a hospital management system microservices architecture
+
+### TypeScript Configuration
+- **Target**: ES2022 with strict mode enabled
+- **Compiler Options**: `noImplicitOverride`, `noPropertyAccessFromIndexSignature`, `noImplicitReturns`, `noFallthroughCasesInSwitch`
+- **Angular Compiler**: Strict injection parameters, input access modifiers, and templates enabled
 
 ## Authentication Architecture
 
