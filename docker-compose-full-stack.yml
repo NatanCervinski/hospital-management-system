@@ -90,8 +90,8 @@ services:
       # Email configuration
       SPRING_MAIL_HOST: smtp.gmail.com
       SPRING_MAIL_PORT: 587
-      SPRING_MAIL_USERNAME: ${EMAIL_USERNAME:-}
-      SPRING_MAIL_PASSWORD: ${EMAIL_PASSWORD:-}
+      #SPRING_MAIL_USERNAME: ${EMAIL_USERNAME:-}
+      #SPRING_MAIL_PASSWORD: ${EMAIL_PASSWORD:-}
     depends_on:
       ms-autenticacao-db:
         condition: service_healthy
