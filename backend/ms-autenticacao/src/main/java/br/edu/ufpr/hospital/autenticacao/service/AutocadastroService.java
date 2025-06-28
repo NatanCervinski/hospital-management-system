@@ -128,7 +128,7 @@ public class AutocadastroService {
         request.getLogradouro(),
         request.getBairro(),
         request.getCidade(),
-        request.getEstado().toUpperCase(),
+        request.getEstado() != null ? request.getEstado().toUpperCase() : null,
         request.getCepLimpo());
 
     // Número e complemento separados

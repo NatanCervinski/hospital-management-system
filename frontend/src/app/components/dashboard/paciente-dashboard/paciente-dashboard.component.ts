@@ -34,7 +34,7 @@ export class PacienteDashboardComponent implements OnInit, OnDestroy {
     this.isAuthenticated = !!this.user;
 
     if (this.user) {
-      this.loadPacienteData(this.user.id);
+      this.loadPacienteData(this.user.pacienteId);
     } else {
       this.isLoading = false;
     }
@@ -46,7 +46,7 @@ export class PacienteDashboardComponent implements OnInit, OnDestroy {
           this.user = user;
           this.isAuthenticated = !!user;
           if (user && !this.pacienteDetalhes) {
-            this.loadPacienteData(user.id);
+            this.loadPacienteData(user.pacienteId);
           } else if (!user) {
             this.isLoading = false;
           }
@@ -159,7 +159,7 @@ export class PacienteDashboardComponent implements OnInit, OnDestroy {
   onPurchaseSuccess(): void {
     // Reload dashboard data to reflect updated points balance
     if (this.user) {
-      this.loadPacienteData(this.user.id);
+      this.loadPacienteData(this.user.pacienteId);
     }
   }
 }

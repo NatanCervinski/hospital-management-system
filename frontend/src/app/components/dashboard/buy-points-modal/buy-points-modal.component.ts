@@ -69,7 +69,7 @@ export class BuyPointsModalComponent implements OnInit, OnDestroy {
       const valorReais = this.valorCalculadoReais;
 
       this.subscription.add(
-        this.pacienteService.comprarPontos(user.id, valorReais).subscribe({
+        this.pacienteService.comprarPontos(user.pacienteId, valorReais).subscribe({
           next: (response) => {
             this.isLoading = false;
             this.purchaseSuccess.emit();

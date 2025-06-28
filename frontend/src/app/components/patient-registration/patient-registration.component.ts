@@ -2,16 +2,17 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject, debounceTime, distinctUntilChanged, switchMap, takeUntil, tap } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, firstValueFrom, switchMap, takeUntil, tap } from 'rxjs';
 
 import { PatientRegistrationService } from '../../services/patient-registration.service';
 import { ViacepService } from '../../services/viacep.service';
 import { CpfValidatorService } from '../../services/cpf-validator.service';
-import { 
-  PatientRegistrationRequest, 
-  FormValidationState, 
-  ViaCepResponse 
+import {
+  PatientRegistrationRequest,
+  FormValidationState,
+  ViaCepResponse
 } from '../../interfaces/patient.interface';
+import { UserRegistrationRequest } from '../../interfaces/user.interface';
 
 @Component({
   selector: 'app-patient-registration',
@@ -62,7 +63,7 @@ export class PatientRegistrationComponent implements OnInit, OnDestroy {
       email: ['', [Validators.required, Validators.email]],
       dataNascimento: ['', [Validators.required, this.dateValidator.bind(this)]],
       telefone: ['', [Validators.required, Validators.minLength(14)]],
-      
+
       // Address Information
       cep: ['', [Validators.required, Validators.minLength(9)]],
       logradouro: ['', Validators.required],
@@ -89,7 +90,7 @@ export class PatientRegistrationComponent implements OnInit, OnDestroy {
           if (formatted !== value) {
             this.registrationForm.get('cpf')?.setValue(formatted, { emitEvent: false });
           }
-          
+
           // Trigger async validation when CPF is complete
           if (this.cpfValidator.isCpfComplete(value)) {
             this.cpfCheck$.next(value);
@@ -106,7 +107,7 @@ export class PatientRegistrationComponent implements OnInit, OnDestroy {
           if (formatted !== value) {
             this.registrationForm.get('cep')?.setValue(formatted, { emitEvent: false });
           }
-          
+
           // Trigger ViaCEP lookup when CEP is complete
           if (this.viacepService.isCepComplete(value)) {
             this.cepLookup$.next(value);
@@ -241,14 +242,14 @@ export class PatientRegistrationComponent implements OnInit, OnDestroy {
 
   private cpfValidatorFn(control: AbstractControl): { [key: string]: any } | null {
     if (!control.value) return null;
-    
+
     const isValid = this.cpfValidator.validateCpf(control.value);
     return isValid ? null : { invalidCpf: true };
   }
 
   private dateValidator(control: AbstractControl): { [key: string]: any } | null {
     if (!control.value) return null;
-    
+
     const isValid = this.viacepService.isValidDate(control.value);
     return isValid ? null : { invalidDate: true };
   }
@@ -293,14 +294,14 @@ export class PatientRegistrationComponent implements OnInit, OnDestroy {
   isFieldValid(fieldName: string): boolean {
     const control = this.registrationForm.get(fieldName);
     const validationState = this.validationState[fieldName];
-    
+
     return !!(control?.valid && !validationState?.error && !validationState?.pending);
   }
 
   isFieldInvalid(fieldName: string): boolean {
     const control = this.registrationForm.get(fieldName);
     const validationState = this.validationState[fieldName];
-    
+
     return !!(control?.invalid && control?.touched) || !!validationState?.error;
   }
 
@@ -326,13 +327,29 @@ export class PatientRegistrationComponent implements OnInit, OnDestroy {
 
     try {
       const formData = this.registrationForm.value;
-      const patientData: PatientRegistrationRequest = this.patientService.formatPatientDataForApi(formData);
-      
-      const response = await this.patientService.registerPatient(patientData).toPromise();
-      
-      this.successMessage = 'Cadastro realizado com sucesso! Verifique seu email para receber suas credenciais de acesso. Você será redirecionado para o login...';
+      // --- 1. PRIMEIRA CHAMADA: Cadastrar o usuário no ms-autenticacao ---
+      // Prepara os dados apenas para o registro do usuário
+      const userData = this.patientService.formatUserDataForApi(formData);
+      const userResponse = await firstValueFrom(this.patientService.registerUser(userData));
+      console.log('Resposta do ms-autenticacao:', userResponse); // << ADICIONE ESTA LINHA!
+
+      // Se a primeira chamada falhar, o `catch` abaixo será acionado.
+      // Se funcionar, teremos o ID e CPF necessários para o próximo passo.
+      if (!userResponse || !userResponse.id) {
+        throw new Error('Falha ao obter o ID do usuário após o registro.');
+      }
+      console.log('Usuário registrado com sucesso:', userResponse);
+
+      const profileData = this.patientService.formatPatientProfileForApi(formData, userResponse.id);
+      console.log('Dados do perfil do paciente formatados:', profileData);
+      await firstValueFrom(this.patientService.createPatientProfile(profileData));
+      console.log('Perfil do paciente criado com sucesso');
+
+      // 3. Sucesso
+      this.successMessage = 'Cadastro realizado com sucesso! ...';
       this.startRedirectCountdown();
-      
+
+
     } catch (error: any) {
       this.errorMessage = this.patientService.getErrorMessage(error);
     } finally {

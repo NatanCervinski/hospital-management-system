@@ -10,6 +10,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   token: string;
   id: string;
+  pacienteId: string;
   email: string;
   nome: string;
   tipo: 'PACIENTE' | 'FUNCIONARIO';
@@ -17,6 +18,7 @@ export interface LoginResponse {
 
 export interface User {
   id: string;
+  pacienteId: string;
   email: string;
   nome: string;
   tipo: 'PACIENTE' | 'FUNCIONARIO';
@@ -47,6 +49,7 @@ export class AuthService {
           this.setToken(response.token);
           var user: User = {
             id: response.id,
+            pacienteId: response.pacienteId,
             email: response.email,
             nome: response.nome,
             tipo: response.tipo

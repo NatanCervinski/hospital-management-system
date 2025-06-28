@@ -45,7 +45,7 @@
             <div class="card-body text-center">
               <i class="fas fa-coins fa-3x text-warning mb-3"></i>
               <h5 class="card-title">Meus Pontos</h5>
-              <h2 class="text-warning">{{ pacienteDetalhes?.pontos || 0 }}</h2>
+              <h2 class="text-warning">{{ pacienteDetalhes?.saldoPontos || 0 }}</h2>
               <button class="btn btn-warning btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#buyPointsModal">
                 <i class="fas fa-plus me-1"></i>Comprar Pontos
               </button>
@@ -113,7 +113,7 @@
                   <td>
                     <div class="btn-group btn-group-sm" role="group">
                       <!-- Cancel Button -->
-                      <button 
+                      <button
                         *ngIf="agendamento.status === 'CRIADO' || agendamento.status === 'CHECK-IN'"
                         class="btn btn-outline-danger"
                         (click)="cancelarAgendamento(agendamento)"
@@ -121,9 +121,9 @@
                         <i class="fas fa-times"></i>
                         Cancelar
                       </button>
-                      
+
                       <!-- Check-in Button -->
-                      <button 
+                      <button
                         *ngIf="isCheckInAvailable(agendamento)"
                         class="btn btn-outline-primary"
                         (click)="fazerCheckin(agendamento)"
@@ -132,9 +132,9 @@
                         Check-in
                       </button>
                     </div>
-                    
+
                     <!-- No actions available -->
-                    <span *ngIf="!isCheckInAvailable(agendamento) && agendamento.status !== 'CRIADO' && agendamento.status !== 'CHECK-IN'" 
+                    <span *ngIf="!isCheckInAvailable(agendamento) && agendamento.status !== 'CRIADO' && agendamento.status !== 'CHECK-IN'"
                           class="text-muted small">
                       Nenhuma ação disponível
                     </span>

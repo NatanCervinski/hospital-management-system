@@ -17,7 +17,7 @@ public class PacienteResponseDTO {
     private String numero;
     private String complemento;
     private String bairro;
-    private String localidade;
+    private String cidade;
     private String uf;
     private BigDecimal saldoPontos;
     private LocalDateTime dataCadastro;

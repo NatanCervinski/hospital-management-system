@@ -31,6 +31,7 @@ import lombok.NoArgsConstructor;
 public class Paciente {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "usuario_id", nullable = false)
@@ -58,7 +59,7 @@ public class Paciente {
     private String bairro;
 
     @Column(nullable = false)
-    private String localidade; // Cidade
+    private String cidade; // Cidade
 
     @Column(nullable = false, length = 2)
     private String uf;
@@ -71,6 +72,9 @@ public class Paciente {
 
     @Column(nullable = false)
     private boolean ativo = true;
+
+    @Column(name = "telefone")
+    private String telefone;
 
     @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransacaoPonto> transacoesPontos;

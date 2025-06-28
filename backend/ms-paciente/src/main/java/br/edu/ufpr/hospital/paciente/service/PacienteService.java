@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import br.edu.ufpr.hospital.paciente.dto.CompraPontosDTO;
@@ -22,8 +23,10 @@ import br.edu.ufpr.hospital.paciente.model.TransacaoPonto;
 import br.edu.ufpr.hospital.paciente.repository.PacienteRepository;
 import br.edu.ufpr.hospital.paciente.repository.TransacaoPontoRepository;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class PacienteService {
     private final PacienteRepository pacienteRepository;
     private final TransacaoPontoRepository transacaoPontoRepository;
@@ -45,16 +48,22 @@ public class PacienteService {
         }
 
         Paciente paciente = new Paciente();
-        paciente.setCpf(dto.getCpf());
+        String cpfNormalizado = dto.getCpf().replaceAll("\\D", "");
+        paciente.setCpf(cpfNormalizado);
         paciente.setNome(dto.getNome());
         paciente.setEmail(dto.getEmail());
-        paciente.setCep(dto.getCep());
+        if (dto.getTelefone() != null) {
+            String telefoneNormalizado = dto.getTelefone().replaceAll("\\D", "");
+            paciente.setTelefone(telefoneNormalizado);
+        }
+        String cepNormalizado = dto.getCep().replaceAll("\\D", "");
+        paciente.setCep(cepNormalizado);
         paciente.setLogradouro(dto.getLogradouro());
         paciente.setNumero(dto.getNumero());
         paciente.setComplemento(dto.getComplemento());
         paciente.setBairro(dto.getBairro());
-        paciente.setLocalidade(dto.getLocalidade());
-        paciente.setUf(dto.getUf());
+        paciente.setCidade(dto.getCidade());
+        paciente.setUf(dto.getEstado());
         paciente.setSaldoPontos(BigDecimal.ZERO); // Inicia com 0 pontos
         paciente.setUsuarioId(dto.getUsuarioId());
 
@@ -148,6 +157,7 @@ public class PacienteService {
                 .orElseThrow(() -> new PacienteNaoEncontradoException("Paciente não encontrado."));
 
         paciente.setSaldoPontos(paciente.getSaldoPontos().add(pontosAAdicionar));
+
         Paciente updatedPaciente = pacienteRepository.save(paciente);
 
         TransacaoPonto transacao = new TransacaoPonto();
@@ -161,9 +171,13 @@ public class PacienteService {
         return convertToResponseDTO(updatedPaciente);
     }
 
-    public boolean pacientePertenceAoUsuario(Integer pacienteId, Integer usuarioId) {
+    public boolean pacientePertenceAoUsuario(Integer pacienteId, Jwt jwt) {
+        Integer usuarioId = ((Number) jwt.getClaim("id")).intValue();
+        log.info("Verificando se o paciente com ID {} pertence ao usuário com ID {}", pacienteId, usuarioId);
+
+        // 2. Buscar o paciente pelo ID da URL e comparar os CPFs.
         return pacienteRepository.findById(pacienteId)
-                .map(p -> p.getUsuarioId().equals(usuarioId))
+                .map(paciente -> paciente.getUsuarioId().equals(usuarioId))
                 .orElse(false);
     }
 
@@ -176,12 +190,14 @@ public class PacienteService {
     public PacienteResponseDTO buscarPorId(Integer pacienteId) {
         Paciente paciente = pacienteRepository.findById(pacienteId)
                 .orElseThrow(() -> new PacienteNaoEncontradoException("Paciente não encontrado com ID: " + pacienteId));
-        return convertToResponseDTO(paciente);
+
+        BigDecimal saldoDePontos = transacaoPontoRepository.calcularSaldoDePontos(pacienteId);
+        log.info("Saldo de pontos para o paciente com ID {}: {}", pacienteId, saldoDePontos);
+
+        return convertToResponseDTO(paciente, saldoDePontos);
     }
 
-    // Métodos utilitários para conversão
-
-    private PacienteResponseDTO convertToResponseDTO(Paciente paciente) {
+    private PacienteResponseDTO convertToResponseDTO(Paciente paciente, BigDecimal saldoDePontos) {
         PacienteResponseDTO dto = new PacienteResponseDTO();
         dto.setId(paciente.getId());
         dto.setCpf(paciente.getCpf());
@@ -192,12 +208,17 @@ public class PacienteService {
         dto.setNumero(paciente.getNumero());
         dto.setComplemento(paciente.getComplemento());
         dto.setBairro(paciente.getBairro());
-        dto.setLocalidade(paciente.getLocalidade());
+        dto.setCidade(paciente.getCidade());
+        dto.setSaldoPontos(saldoDePontos);
         dto.setUf(paciente.getUf());
         dto.setSaldoPontos(paciente.getSaldoPontos());
         dto.setDataCadastro(paciente.getDataCadastro());
         dto.setAtivo(paciente.isAtivo());
         return dto;
+    }
+
+    private PacienteResponseDTO convertToResponseDTO(Paciente paciente) {
+        return convertToResponseDTO(paciente, BigDecimal.ZERO); // Ou buscar o saldo aqui também
     }
 
     private TransacaoPontoDTO convertToTransacaoDTO(TransacaoPonto transacao) {

@@ -1,6 +1,10 @@
 package br.edu.ufpr.hospital.paciente.dto;
 
+import java.time.LocalDate;
+
 import org.hibernate.validator.constraints.br.CPF;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -27,7 +31,7 @@ public class PacienteCadastroDTO {
     private String email;
 
     @NotBlank(message = "CEP é obrigatório.")
-    @Pattern(regexp = "\\d{8}", message = "CEP deve conter 8 dígitos numéricos.")
+    @Pattern(regexp = "^\\d{5}-?\\d{3}$", message = "CEP deve estar no formato XXXXXXXX ou XXXXX-XXX.")
     private String cep;
 
     @NotBlank(message = "Logradouro é obrigatório.")
@@ -40,10 +44,18 @@ public class PacienteCadastroDTO {
     @NotBlank(message = "Bairro é obrigatório.")
     private String bairro;
 
-    @NotBlank(message = "Localidade é obrigatória.")
-    private String localidade;
+    @NotBlank(message = "Cidade é obrigatória.")
+    private String cidade;
 
-    @NotBlank(message = "UF é obrigatório.")
-    @Size(min = 2, max = 2, message = "UF deve ter 2 caracteres.")
-    private String uf;
+    @NotBlank(message = "Estado é obrigatório.")
+    @Size(min = 2, max = 2, message = "Estado deve ter 2 caracteres.")
+    private String estado;
+
+    @NotNull(message = "Data de nascimento é obrigatória.")
+    @JsonFormat(pattern = "dd/MM/yyyy", shape = JsonFormat.Shape.STRING)
+    private LocalDate dataNascimento;
+
+    // --- NOVO CAMPO: telefone ---
+    @NotBlank(message = "Telefone é obrigatório.")
+    private String telefone;
 }

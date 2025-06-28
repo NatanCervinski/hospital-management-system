@@ -35,7 +35,7 @@ export class PacienteService {
    * @returns Observable with array of available consultations
    */
   getConsultasDisponiveis(especialidade?: string): Observable<ConsultaDisponivel[]> {
-    const url = especialidade 
+    const url = especialidade
       ? `${this.API_BASE_URL}/consultas?especialidade=${especialidade}`
       : `${this.API_BASE_URL}/consultas`;
     return this.http.get<ConsultaDisponivel[]>(url);
@@ -57,6 +57,7 @@ export class PacienteService {
    * @returns Observable with purchase response
    */
   comprarPontos(pacienteId: string, valorReais: number): Observable<any> {
+    console.log(`Buying points for patient ${pacienteId} with value R$ ${valorReais}`);
     return this.http.post(`${this.API_BASE_URL}/pacientes/${pacienteId}/comprar-pontos`, { valorReais });
   }
 

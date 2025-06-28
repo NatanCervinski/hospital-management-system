@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import br.edu.ufpr.hospital.autenticacao.dto.LoginRequestDTO;
 import br.edu.ufpr.hospital.autenticacao.dto.LoginResponseDTO;
+import br.edu.ufpr.hospital.autenticacao.dto.PacienteResponseDTO;
 import br.edu.ufpr.hospital.autenticacao.dto.CriarFuncionarioDTO; // Importar CriarFuncionarioDTO
 import br.edu.ufpr.hospital.autenticacao.model.FuncionarioModel;
 import br.edu.ufpr.hospital.autenticacao.model.UsuarioModel;
@@ -17,6 +18,8 @@ import br.edu.ufpr.hospital.autenticacao.security.SecureUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
 @Transactional
@@ -27,6 +30,7 @@ public class UsuarioService {
   private final UsuarioRepository usuarioRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtUtil jwtUtil;
+  private final WebClient webClient;;
 
   // Alterado para receber CriarFuncionarioDTO
   public FuncionarioModel cadastrarFuncionario(CriarFuncionarioDTO funcionarioDTO) { // Recebe o DTO
@@ -112,6 +116,33 @@ public class UsuarioService {
           loginDto.getEmail());
       throw new RuntimeException("Email ou senha inválidos");
     }
+    Integer pacienteId = null;
+    if (UsuarioModel.PERFIL_PACIENTE.equals(usuario.getPerfil())) {
+      try {
+        // Faz a chamada interna para GET http://ms-paciente:8083/pacientes/by-cpf/{cpf}
+        PacienteResponseDTO paciente = this.webClient.get()
+            .uri("/pacientes/by-cpf/" + usuario.getCpf())
+            .retrieve()
+            .bodyToMono(PacienteResponseDTO.class)
+            .block(); // .block() torna a chamada síncrona, pois precisamos esperar a resposta
+
+        if (paciente == null) {
+          log.warn("Paciente não encontrado para o CPF: {}", usuario.getCpf());
+          throw new RuntimeException("Paciente não encontrado");
+        }
+        pacienteId = paciente.getId();
+      } catch (WebClientResponseException e) {
+        // Bloco específico para erros HTTP (4xx, 5xx)
+        log.error("Erro na chamada para ms-paciente. Status: {}, Body: {}",
+            e.getStatusCode(), e.getResponseBodyAsString(), e); // Loga a exceção completa
+        throw new RuntimeException("Erro de comunicação ao buscar perfil do paciente.");
+
+      } catch (Exception e) {
+        // Bloco para outros erros (conexão, timeout, etc.)
+        log.error("Erro inesperado ao chamar ms-paciente: ", e); // <<< PONTO MAIS IMPORTANTE
+        throw new RuntimeException("Não foi possível encontrar o perfil do paciente correspondente.");
+      }
+    }
 
     // 4. Atualizar último acesso
     usuario.setUltimoAcesso(LocalDateTime.now());
@@ -121,7 +152,7 @@ public class UsuarioService {
         usuario.getId(), usuario.getPerfil());
 
     // 5. Gerar token JWT
-    String token = jwtUtil.generateToken(usuario);
+    String token = jwtUtil.generateToken(usuario, pacienteId);
 
     // 6. Retornar resposta
     return LoginResponseDTO.sucesso(
@@ -129,7 +160,8 @@ public class UsuarioService {
         usuario.getPerfil(),
         usuario.getNome(),
         usuario.getEmail(),
-        usuario.getId());
+        usuario.getId(),
+        pacienteId);
   }
 
   /**

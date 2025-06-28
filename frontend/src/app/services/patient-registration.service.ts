@@ -1,25 +1,53 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { 
-  PatientRegistrationRequest, 
-  PatientRegistrationResponse, 
-  EmailCheckResponse, 
-  CpfCheckResponse 
+import {
+  PatientRegistrationRequest,
+  PatientRegistrationResponse,
+  EmailCheckResponse,
+  CpfCheckResponse,
+  PatientProfileRequest
 } from '../interfaces/patient.interface';
+import { UserRegistrationRequest, UserRegistrationResponse } from '../interfaces/user.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PatientRegistrationService {
-  private readonly API_BASE_URL = 'http://localhost:3000/api/auth';
+  private readonly AUTH_API_URL = 'http://localhost:3000/api/auth';
+  private readonly PATIENT_API_URL = 'http://localhost:3000/api/pacientes';
   private loadingSubject = new BehaviorSubject<boolean>(false);
   public loading$ = this.loadingSubject.asObservable();
 
   constructor(private http: HttpClient) { }
 
+  /**
+   * PASSO 1: Registra o Usuário no ms-autenticacao
+   * @param userData Dados para registro do usuário
+   * @returns Observable com a resposta do ms-autenticacao
+   */
+  registerUser(userData: UserRegistrationRequest): Observable<UserRegistrationResponse> {
+    this.loadingSubject.next(true);
+    return this.http.post<UserRegistrationResponse>(
+      `${this.AUTH_API_URL}/register/paciente`, // Endpoint correto
+      userData
+    ).pipe(catchError(this.handleError));
+  }
+  createPatientProfile(profileData: PatientProfileRequest): Observable<PatientRegistrationResponse> {
+    // Note que a URL base mudou para o endpoint de pacientes
+    return this.http.post<PatientRegistrationResponse>(
+      `${this.PATIENT_API_URL}/cadastro`, // Endpoint do ms-paciente
+      profileData
+    ).pipe(
+      map(response => {
+        this.loadingSubject.next(false); // Finaliza o loading apenas aqui
+        return response;
+      }),
+      catchError(this.handleError)
+    );
+  }
   /**
    * Registers a new patient
    * @param patientData Patient registration data
@@ -32,9 +60,10 @@ export class PatientRegistrationService {
 
     this.loadingSubject.next(true);
 
+
     return this.http.post<PatientRegistrationResponse>(
-      `${this.API_BASE_URL}/register/paciente`, 
-      patientData, 
+      `${this.AUTH_API_URL}/register/paciente`,
+      patientData,
       { headers }
     ).pipe(
       map(response => {
@@ -60,7 +89,7 @@ export class PatientRegistrationService {
 
     const params = new HttpParams().set('email', email);
 
-    return this.http.get<EmailCheckResponse>(`${this.API_BASE_URL}/check-email`, { params })
+    return this.http.get<EmailCheckResponse>(`${this.AUTH_API_URL}/check-email`, { params })
       .pipe(
         catchError(error => {
           console.error('Email check error:', error);
@@ -84,7 +113,7 @@ export class PatientRegistrationService {
     const cleanCpf = cpf.replace(/[^\d]/g, '');
     const params = new HttpParams().set('cpf', cleanCpf);
 
-    return this.http.get<CpfCheckResponse>(`${this.API_BASE_URL}/check-cpf`, { params })
+    return this.http.get<CpfCheckResponse>(`${this.AUTH_API_URL}/check-cpf`, { params })
       .pipe(
         catchError(error => {
           console.error('CPF check error:', error);
@@ -193,7 +222,7 @@ export class PatientRegistrationService {
    */
   private convertDateToApiFormat(dateString: string): string {
     if (!dateString || dateString.length !== 10) return '';
-    
+
     const [day, month, year] = dateString.split('/');
     return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
@@ -207,19 +236,49 @@ export class PatientRegistrationService {
     if (error.status === 409) {
       return error.error?.message || 'Email ou CPF já cadastrado';
     }
-    
+
     if (error.status === 400) {
       return error.error?.message || 'Dados inválidos. Verifique os campos e tente novamente';
     }
-    
+
     if (error.status === 500) {
       return 'Sistema temporariamente indisponível. Tente novamente em alguns minutos';
     }
-    
+
     if (error.status === 0) {
       return 'Falha na conexão. Verifique sua internet e tente novamente';
     }
-    
+
     return error.error?.message || 'Erro inesperado. Tente novamente';
+  }
+
+  private handleError = (error: any) => {
+    this.loadingSubject.next(false);
+    return throwError(error);
+  }
+  public formatPatientProfileForApi(formData: any, usuarioId: number): PatientProfileRequest {
+    return {
+      usuarioId: usuarioId,
+      nome: formData.nome,
+      cpf: formData.cpf,
+      email: formData.email,
+      dataNascimento: formData.dataNascimento,
+      telefone: formData.telefone,
+      cep: formData.cep,
+      logradouro: formData.logradouro,
+      numero: formData.numero,
+      complemento: formData.complemento,
+      bairro: formData.bairro,
+      cidade: formData.cidade,
+      estado: formData.estado,
+    };
+  }
+  public formatUserDataForApi(formData: any): UserRegistrationRequest {
+    return {
+      nome: formData.nome,
+      cpf: formData.cpf,
+      email: formData.email,
+      cep: formData.cep
+    };
   }
 }

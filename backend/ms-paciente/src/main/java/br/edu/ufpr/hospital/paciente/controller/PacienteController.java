@@ -26,8 +26,10 @@ import br.edu.ufpr.hospital.paciente.dto.SaldoPontosDTO;
 import br.edu.ufpr.hospital.paciente.model.OrigemTransacaoPonto;
 import br.edu.ufpr.hospital.paciente.service.PacienteService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
+@Slf4j
 @RequestMapping("/pacientes")
 public class PacienteController {
 
@@ -50,9 +52,8 @@ public class PacienteController {
             @Valid @RequestBody CompraPontosDTO dto,
             @AuthenticationPrincipal Jwt jwt) {
 
-        Integer usuarioId = ((Number) jwt.getClaim("id")).intValue();
-
-        if (!pacienteService.pacientePertenceAoUsuario(pacienteId, usuarioId)) {
+        if (!pacienteService.pacientePertenceAoUsuario(pacienteId, jwt)) {
+            log.warn("Paciente {} tentou comprar pontos para outro paciente {}", jwt.getClaim("id"), pacienteId);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -68,8 +69,7 @@ public class PacienteController {
 
         String userRole = jwt.getClaim("tipo");
         if ("PACIENTE".equals(userRole)) {
-            Integer usuarioId = ((Number) jwt.getClaim("id")).intValue();
-            if (!pacienteService.pacientePertenceAoUsuario(pacienteId, usuarioId)) {
+            if (!pacienteService.pacientePertenceAoUsuario(pacienteId, jwt)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
         }
@@ -79,9 +79,9 @@ public class PacienteController {
     }
 
     // Endpoint para comunicação entre microsserviços - buscar paciente por CPF
-    @PreAuthorize("hasAuthority('FUNCIONARIO')")
     @GetMapping("/by-cpf/{cpf}")
     public ResponseEntity<PacienteResponseDTO> buscarPacientePorCpf(@PathVariable String cpf) {
+        log.info("Buscando paciente por CPF: {}", cpf);
         PacienteResponseDTO paciente = pacienteService.buscarPacientePorCpf(cpf);
         return ResponseEntity.ok(paciente);
     }
@@ -120,8 +120,7 @@ public class PacienteController {
 
         String userRole = jwt.getClaim("tipo");
         if ("PACIENTE".equals(userRole)) {
-            Integer usuarioId = ((Number) jwt.getClaim("id")).intValue();
-            if (!pacienteService.pacientePertenceAoUsuario(pacienteId, usuarioId)) {
+            if (!pacienteService.pacientePertenceAoUsuario(pacienteId, jwt)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
         }
@@ -130,7 +129,8 @@ public class PacienteController {
         return ResponseEntity.ok(paciente);
     }
 
-    // Endpoint para buscar agendamentos de um paciente (placeholder - aguardando MS Consulta)
+    // Endpoint para buscar agendamentos de um paciente (placeholder - aguardando MS
+    // Consulta)
     @PreAuthorize("hasAnyAuthority('PACIENTE', 'FUNCIONARIO')")
     @GetMapping("/{pacienteId}/agendamentos")
     public ResponseEntity<?> buscarAgendamentosPaciente(
@@ -140,7 +140,7 @@ public class PacienteController {
         String userRole = jwt.getClaim("tipo");
         if ("PACIENTE".equals(userRole)) {
             Integer usuarioId = ((Number) jwt.getClaim("id")).intValue();
-            if (!pacienteService.pacientePertenceAoUsuario(pacienteId, usuarioId)) {
+            if (!pacienteService.pacientePertenceAoUsuario(pacienteId, jwt)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
         }

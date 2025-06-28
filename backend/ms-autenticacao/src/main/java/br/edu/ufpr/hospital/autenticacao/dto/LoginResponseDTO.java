@@ -14,9 +14,11 @@ public class LoginResponseDTO {
   private String nome;
   private String email;
   private Integer id;
+  private Integer pacienteId; // Pode ser nulo se for funcionário
 
   // Método auxiliar para criar resposta de sucesso
-  public static LoginResponseDTO sucesso(String token, String tipo, String nome, String email, Integer id) {
-    return new LoginResponseDTO(token, tipo, nome, email, id);
+  public static LoginResponseDTO sucesso(String token, String tipo, String nome, String email, Integer id,
+      Integer pacienteId) {
+    return new LoginResponseDTO(token, tipo, nome, email, id, pacienteId);
   }
 }

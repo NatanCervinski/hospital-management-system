@@ -31,7 +31,7 @@ public class JwtUtil {
   /**
    * Gera token JWT para um usuário
    */
-  public String generateToken(UsuarioModel usuario) {
+  public String generateToken(UsuarioModel usuario, Integer pacienteId) {
     Map<String, Object> claims = new HashMap<>();
 
     // Adiciona informações extras no payload do token
@@ -39,6 +39,10 @@ public class JwtUtil {
     claims.put("nome", usuario.getNome());
     claims.put("tipo", usuario.getPerfil());
     claims.put("email", usuario.getEmail());
+
+    if (pacienteId != null) {
+      claims.put("pacienteId", pacienteId);
+    }
 
     return createToken(claims, usuario.getEmail());
   }

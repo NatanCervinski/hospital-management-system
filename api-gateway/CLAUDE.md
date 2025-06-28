@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the API Gateway component of a Hospital Management System (Sistema de Gestão Hospitalar) built using a microservices architecture. The project is part of the DS152 – DAC course assignment.
+This is the API Gateway component of a Hospital Management System built using a microservices architecture. The project is part of the DS152 – DAC course assignment for UFPR (2025-1).
 
 ### Architecture
 
@@ -12,21 +12,21 @@ The system consists of:
 - **api-gateway/**: Node.js API Gateway (this component - Express.js with JWT authentication)
 - **backend/**: Spring Boot microservices
   - `ms-autenticacao/`: Authentication microservice (port 8081)
-  - `ms-paciente/`: Patient management microservice (port 8082)
-  - `ms-consulta/`: Consultation/scheduling microservice (port 8083)
+  - `ms-paciente/`: Patient management microservice (port 8083)
+  - `ms-consulta/`: Consultation/scheduling microservice (port 8080)
 - **frontend/**: Angular 19 application
-- **db/**: Database scripts (PostgreSQL)
 - **docker/**: Docker configurations
 
 ### Technology Stack
 
-- **API Gateway**: Node.js with Express.js, JWT validation, rate limiting, CORS
-- **Backend**: Spring Boot 3.4.5 with Java 21
+- **API Gateway**: Node.js 18+ with Express.js, JWT validation, rate limiting, CORS, Helmet security
+- **Backend**: Spring Boot 3.4.5 with Java 17/21
 - **Frontend**: Angular 19 with TypeScript
-- **Database**: PostgreSQL 16
-- **Caching**: Redis
+- **Database**: PostgreSQL 16 (separate per microservice)
+- **Caching**: Redis 7 (JWT blacklist)
 - **Authentication**: JWT with blacklist support via Redis
 - **Containerization**: Docker with docker-compose
+- **Testing**: Jest for unit tests, httpie for integration tests
 
 ## Development Commands
 
@@ -85,8 +85,8 @@ docker-compose up -d  # Full stack with dependencies
 ### Routes via Gateway:
 - **Authentication**: /api/auth/* → ms-autenticacao:8081 (public routes)
 - **Staff Management**: /api/funcionarios/* → ms-autenticacao:8081 (FUNCIONARIO only)
-- **Patient Management**: /api/pacientes/* → ms-paciente:8082 (authenticated)
-- **Consultations**: /api/consultas/* → ms-consulta:8083 (role-based access)
+- **Patient Management**: /api/pacientes/* → ms-paciente:8083 (authenticated)
+- **Consultations**: /api/consultas/* → ms-consulta:8080 (role-based access)
 
 ### Authentication Service (ms-autenticacao)
 - **Login**: POST /api/auth/login
@@ -137,12 +137,32 @@ The authentication microservice includes comprehensive API tests in `testes.sh` 
 
 ## API Gateway Architecture
 
+### Request Flow
+```
+Client Request → API Gateway → Authentication Middleware → Route Mapping → Proxy Service → Microservice
+     ↓                ↓                    ↓                    ↓              ↓
+Rate Limiting    CORS/Security     JWT Validation      Path Transformation   Response
+```
+
 ### Key Components
 
-- **Authentication Middleware** (`src/middlewares/auth.js`): JWT validation with blacklist check via Redis
-- **Route Handlers** (`src/routes/`): Proxy requests to appropriate microservices
-- **Proxy Service** (`src/services/proxy.js`): HTTP proxy logic for microservice communication  
+- **Main App** (`src/app.js`): Express server with security middleware stack
+- **Authentication Middleware** (`src/middlewares/auth.js`): JWT validation with Redis blacklist check
+- **Route Handlers** (`src/routes/`): Route-specific logic and authentication requirements
+- **Proxy Service** (`src/services/proxy.js`): HTTP proxy with intelligent path transformation
+- **Configuration** (`src/config/index.js`): Centralized environment configuration
 - **Error Handling** (`src/middlewares/errorHandler.js`): Centralized error processing
+
+### Path Transformation Logic
+- **ms-autenticacao**: Preserves `/api` prefix (expects `/api/auth/*`, `/api/funcionarios/*`)
+- **ms-paciente**: Removes `/api` prefix (expects `/pacientes/*`)
+- **ms-consulta**: Removes `/api` prefix (expects `/consultas/*`)
+
+### Authentication Patterns
+- **Public Routes**: `/api/auth/login`, `/api/auth/register/paciente`, `/api/pacientes/cadastro`
+- **JWT Required**: Most endpoints require valid JWT token
+- **Role-Based**: `FUNCIONARIO` vs `PACIENTE` access controls
+- **Blacklist Check**: All tokens validated against Redis blacklist in ms-autenticacao
 
 ### Security Features
 
@@ -151,20 +171,65 @@ The authentication microservice includes comprehensive API tests in `testes.sh` 
 - Helmet.js security headers
 - JWT token validation with blacklist support
 - Role-based access control (PACIENTE vs FUNCIONARIO)
+- Input validation via JSON parsing limits
+- Connection timeout protection (30s default)
 
 ### Configuration
 
-Environment variables are configured via `.env` file (see `.env.example`):
-- Microservice URLs with Docker network support
-- JWT secrets and expiration
-- Rate limiting thresholds
-- CORS origins
+Environment variables (Docker environment or `.env` file):
+```bash
+PORT=3000
+NODE_ENV=production
+MS_AUTENTICACAO_URL=http://ms-autenticacao:8081
+MS_PACIENTE_URL=http://ms-paciente:8083  
+MS_CONSULTA_URL=http://ms-consulta:8080
+JWT_SECRET=minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem
+CORS_ORIGIN=http://localhost:4200
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+```
 
 ### Testing
 
 The `test-gateway.sh` script provides comprehensive testing including:
-- Health checks
-- Authentication flows
+- Health checks (gateway + aggregated microservice health)
+- Authentication flows via gateway
 - Protected endpoint access
 - Rate limiting verification
 - Error handling validation
+- MS Paciente integration tests
+
+## Development Patterns
+
+### Middleware Stack Order (src/app.js)
+1. **Helmet**: Security headers
+2. **CORS**: Cross-origin configuration
+3. **Rate Limiting**: Request throttling
+4. **Morgan**: HTTP logging
+5. **Body Parsing**: JSON/URL encoded
+6. **Route Handlers**: Business logic
+7. **Error Handler**: Centralized error processing
+
+### Authentication Middleware Types
+- **authenticateToken**: Full JWT validation with blacklist check
+- **requireFuncionario**: Role enforcement for staff-only endpoints
+- **requirePaciente**: Role enforcement for patient-only endpoints  
+- **optionalAuth**: Non-blocking token validation for flexible endpoints
+
+### Error Handling Strategy
+- **Consistent HTTP Status Codes**: 400/401/403/404/409/500 across all responses
+- **Structured Error Format**: All errors include `error`, `code`, and contextual fields
+- **Service Resilience**: Graceful degradation when microservices are unavailable
+- **Request Logging**: All proxy requests logged with service name and timing
+
+### Service Discovery Pattern
+- **Path-Based Routing**: URL patterns determine target microservice
+- **Configuration-Driven**: Service URLs configurable via environment variables
+- **Health Aggregation**: Unified health check endpoint polls all services
+- **Timeout Management**: Per-service timeout configuration with fallbacks
+
+### Development Workflow
+1. **Local Development**: Use `npm run dev` with nodemon for auto-reload
+2. **Integration Testing**: Run `./test-gateway.sh` against running services
+3. **Docker Testing**: Use `docker-compose up -d` for full stack testing
+4. **Service Dependencies**: Ensure microservices are running before testing gateway

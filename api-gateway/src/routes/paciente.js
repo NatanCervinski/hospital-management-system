@@ -8,7 +8,8 @@ const router = express.Router();
 const funcionarioAccessRoutes = [
   '/by-cpf',        // GET /pacientes/by-cpf/{cpf} - buscar paciente por CPF
   '/deduzir-pontos', // PUT /pacientes/{id}/deduzir-pontos 
-  '/adicionar-pontos' // PUT /pacientes/{id}/adicionar-pontos
+  '/adicionar-pontos', // PUT /pacientes/{id}/adicionar-pontos
+  '/comprar-pontos'
 ];
 
 // Rotas públicas (não requerem autenticação)
@@ -22,16 +23,16 @@ router.use((req, res, next) => {
   if (publicRoutes.some(route => req.path.startsWith(route))) {
     return next();
   }
-  
+
   // Rotas que funcionários podem acessar
   if (funcionarioAccessRoutes.some(route => req.path.startsWith(route))) {
     return authenticateToken(req, res, next);
   }
-  
+
   // Demais rotas requerem autenticação como paciente
   return authenticateToken(req, res, (err) => {
     if (err) return next(err);
-    
+
     // Verificar se é paciente ou funcionário (funcionário tem acesso total)
     if (req.user.tipo !== 'PACIENTE' && req.user.tipo !== 'FUNCIONARIO') {
       return res.status(403).json({
@@ -39,7 +40,7 @@ router.use((req, res, next) => {
         code: 'ACCESS_DENIED'
       });
     }
-    
+
     next();
   });
 });

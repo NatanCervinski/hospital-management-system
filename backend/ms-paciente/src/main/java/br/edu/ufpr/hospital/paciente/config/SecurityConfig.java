@@ -27,24 +27,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Desabilita CSRF para APIs RESTful
-            .authorizeHttpRequests(authorize -> authorize
-                // Endpoint de autocadastro de paciente é público
-                .requestMatchers("POST", "/pacientes/cadastro").permitAll()
-                // Health check endpoints são públicos
-                .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                // Todas as outras requisições exigem autenticação
-                .anyRequest().authenticated()
-            )
-            // Configura o servidor de recursos OAuth2 para validação de JWT
-            .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt
-                .decoder(jwtDecoder())
-                .jwtAuthenticationConverter(jwtAuthenticationConverter())
-                )
-            )
-            // Garante que o Spring Security não crie sessões de usuário (stateless para JWT)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .csrf(csrf -> csrf.disable()) // Desabilita CSRF para APIs RESTful
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/pacientes/by-cpf/**").permitAll()
+                        // Endpoint de autocadastro de paciente é público
+                        .requestMatchers("POST", "/pacientes/cadastro").permitAll()
+                        // Health check endpoints são públicos
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        // Todas as outras requisições exigem autenticação
+                        .anyRequest().authenticated())
+                // Configura o servidor de recursos OAuth2 para validação de JWT
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt
+                                .decoder(jwtDecoder())
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter())))
+                // Garante que o Spring Security não crie sessões de usuário (stateless para
+                // JWT)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }
@@ -56,7 +55,8 @@ public class SecurityConfig {
         SecretKeySpec secretKey = new SecretKeySpec(jwtSecret.getBytes(), "HmacSha256");
         return NimbusJwtDecoder.withSecretKey(secretKey).build();
 
-        // Se seu MS de Autenticação usa RS256 (chave assimétrica), a configuração é diferente:
+        // Se seu MS de Autenticação usa RS256 (chave assimétrica), a configuração é
+        // diferente:
         // Ex: return NimbusJwtDecoder.withPublicKey(publicKey).build();
         // Você precisaria carregar a chave pública (que é diferente da chave secreta).
     }

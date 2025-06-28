@@ -13,6 +13,10 @@ export interface PatientRegistrationRequest {
   estado: string;
 }
 
+export interface PatientProfileRequest extends PatientRegistrationRequest {
+  usuarioId: number;
+}
+
 export interface PatientRegistrationResponse {
   id: string;
   email: string;

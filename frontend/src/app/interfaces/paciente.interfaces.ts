@@ -2,7 +2,7 @@ export interface PacienteDetalhes {
   id: string;
   nome: string;
   email: string;
-  pontos: number;
+  saldoPontos: number;
 }
 
 export interface Agendamento {
