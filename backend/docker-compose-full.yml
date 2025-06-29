@@ -2,6 +2,8 @@
 # MS Autenticacao + MS Paciente + Bancos de Dados + Redis
 # Execute com: docker-compose -f docker-compose-full.yml up --build
 
+version: "3.8"
+
 services:
   # ============================================================================
   # MS AUTENTICACAO
@@ -63,7 +65,7 @@ services:
       POSTGRES_USER: dac
       POSTGRES_PASSWORD: 123
     ports:
-      - "5432:5432" # Banco do MS Autenticacao
+      - "5433:5432" # Banco do MS Autenticacao
     volumes:
       - autenticacao_db_data:/var/lib/postgresql/data
     healthcheck:

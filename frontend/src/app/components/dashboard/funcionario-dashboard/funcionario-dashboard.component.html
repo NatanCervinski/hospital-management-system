@@ -29,8 +29,8 @@
           <div>
             <strong>Logado com sucesso!</strong><br>
             <small>
-              Usuário: {{ userName }} ({{ userEmail }}) | 
-              Tipo: {{ user?.tipo }} | 
+              Usuário: {{ userName }} ({{ userEmail }}) |
+              Tipo: {{ user.tipo }} |
               Token válido
             </small>
           </div>
@@ -65,7 +65,7 @@
               <i class="fas fa-calendar-alt fa-3x text-success mb-3"></i>
               <h5 class="card-title">Consultas</h5>
               <p class="card-text">Agendar e gerenciar consultas</p>
-              <button class="btn btn-success">Acessar</button>
+              <button class="btn btn-success" routerLink="/consultas">Acessar</button>
             </div>
           </div>
         </div>

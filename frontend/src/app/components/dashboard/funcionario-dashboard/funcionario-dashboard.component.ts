@@ -1,67 +1,25 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService, User } from '../../../services/auth.service';
-import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-funcionario-dashboard',
+  standalone: true,
   imports: [CommonModule],
   templateUrl: './funcionario-dashboard.component.html',
-  styleUrl: './funcionario-dashboard.component.scss'
+  styleUrls: ['./funcionario-dashboard.component.scss']
 })
-export class FuncionarioDashboardComponent implements OnInit, OnDestroy {
-  user: User | null = null;
-  isLoading = true;
-  isAuthenticated = false;
-  private subscription = new Subscription();
+export class FuncionarioDashboardComponent {
+  isLoading = false;
+  isAuthenticated = true;
 
-  constructor(
-    private authService: AuthService,
-    public router: Router
-  ) {}
+  userName = 'Funcionário';
+  userEmail = 'funcionario@teste.com';
+  user = { tipo: 'FUNCIONÁRIO' };
 
-  ngOnInit(): void {
-    this.subscription.add(
-      this.authService.currentUser$.subscribe({
-        next: (user) => {
-          this.user = user;
-          this.isAuthenticated = !!user;
-          this.isLoading = false;
-        }
-      })
-    );
+  constructor(public router: Router) {}
 
-    this.subscription.add(
-      this.authService.verifyToken().subscribe({
-        next: (isValid) => {
-          if (!isValid) {
-            this.router.navigate(['/login']);
-          }
-          this.isLoading = false;
-        },
-        error: () => {
-          this.isLoading = false;
-          this.router.navigate(['/login']);
-        }
-      })
-    );
-  }
-
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-  }
-
-  get userName(): string {
-    return this.user?.nome || this.user?.email || 'Usuário';
-  }
-
-  get userEmail(): string {
-    return this.user?.email || '';
+  logout() {
+    alert('Logout simulado');
   }
 }
