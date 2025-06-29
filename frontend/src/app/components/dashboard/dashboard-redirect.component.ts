@@ -28,7 +28,7 @@ export class DashboardRedirectComponent implements OnInit {
     console.log('User type:', userType);
     
     if (userType === 'FUNCIONARIO') {
-      this.router.navigate(['/dashboard/funcionario']);
+      this.router.navigate(['/admin/dashboard']);
     } else if (userType === 'PACIENTE') {
       this.router.navigate(['/dashboard/paciente']);
     } else {

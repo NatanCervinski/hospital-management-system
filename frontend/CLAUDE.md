@@ -160,3 +160,50 @@ The application uses RxJS and Angular services for state management:
 - **SCSS Processing**: Component-level SCSS with global theme variables
 - **Form Styling**: Bootstrap form components with custom validation states
 - **Loading States**: Consistent loading indicators across components
+
+## Key Development Patterns
+
+### Reactive Forms Architecture
+- **FormBuilder**: All forms use Angular reactive forms with FormBuilder
+- **Real-time Validation**: Async validators for CPF/email uniqueness checking
+- **Input Masking**: ngx-mask library for Brazilian document formatting
+- **Error Display**: Consistent error message patterns across all forms
+
+### Service Architecture Patterns
+- **BehaviorSubject State**: Services use BehaviorSubject for reactive state management
+- **Loading States**: All services implement loading$ observables for UI feedback
+- **Error Handling**: Centralized error handling with user-friendly message translation
+- **API Response Interfaces**: Strongly typed interfaces for all API communications
+
+### Brazilian Localization Specifics
+- **Locale Configuration**: Brazilian Portuguese (pt) configured in app.config.ts
+- **Document Validation**: CPF validation uses official Brazilian algorithm with check digits
+- **Address System**: ViaCEP integration for automatic address completion by postal code
+- **Date Format**: dd/mm/yyyy input format converted to ISO format for API submission
+- **Phone Format**: Brazilian mobile format ((00) 00000-0000) with proper validation
+
+### Security Implementation
+- **JWT Storage**: Tokens stored in localStorage with automatic expiration validation
+- **Token Verification**: Server-side token validation on protected routes
+- **Route Guards**: Dual guard system (authGuard for protection, loginGuard for redirect)
+- **HTTP Interceptor**: Automatic token injection and 401/403 error handling
+- **Role-based Navigation**: Automatic dashboard routing based on user type (FUNCIONARIO/PACIENTE)
+
+### Common Development Tasks
+
+#### Adding New Protected Routes
+1. Add route to `app.routes.ts` with `canActivate: [authGuard]`
+2. Ensure component handles authentication state via AuthService.currentUser$
+3. Test route protection with expired/invalid tokens
+
+#### Implementing Brazilian Form Fields
+1. Use ngx-mask directive for input formatting
+2. Implement async validators for uniqueness checking
+3. Use ViacepService for address fields with CEP integration
+4. Follow error message patterns from existing forms
+
+#### Service Integration
+1. Define TypeScript interfaces in `interfaces/` directory
+2. Implement loading state with BehaviorSubject
+3. Use comprehensive error handling with getErrorMessage() pattern
+4. Cache responses when appropriate (like ViaCEP)

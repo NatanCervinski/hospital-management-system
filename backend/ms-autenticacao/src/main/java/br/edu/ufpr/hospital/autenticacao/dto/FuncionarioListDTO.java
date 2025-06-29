@@ -22,4 +22,5 @@ public class FuncionarioListDTO {
   private LocalDateTime dataCadastro;
   private String cidade;
   private String estado;
+  private String cpf;
 }

@@ -17,8 +17,7 @@ public class UpdateFuncionarioDTO {
   @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres")
   private String nome;
 
-  @Pattern(regexp = "\\d{11}", message = "CPF deve conter exatamente 11 dígitos numéricos")
-  private String cpf;
+  // CPF não pode ser alterado conforme requisito R14
 
   @Email(message = "Email deve ter formato válido")
   @Size(max = 150, message = "Email não pode ter mais de 150 caracteres")

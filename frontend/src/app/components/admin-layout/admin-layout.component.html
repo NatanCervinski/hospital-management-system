@@ -1,0 +1,56 @@
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <nav class="sidebar" [class.collapsed]="!sidebarOpen">
+    <div class="sidebar-header">
+      <div class="brand">
+        <i class="fas fa-hospital-alt"></i>
+        <span *ngIf="sidebarOpen" class="brand-text">Hospital System</span>
+      </div>
+    </div>
+    
+    <div class="sidebar-menu">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a routerLink="/admin/funcionarios" routerLinkActive="active" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span *ngIf="sidebarOpen" class="nav-text">Gerenciar Funcionários</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-link">
+            <i class="fas fa-tachometer-alt"></i>
+            <span *ngIf="sidebarOpen" class="nav-text">Dashboard</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content" [class.expanded]="!sidebarOpen">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <button class="sidebar-toggle" (click)="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+      
+      <div class="header-right">
+        <div class="user-info">
+          <i class="fas fa-user-circle"></i>
+          <span class="user-name">{{ currentUser?.nome || 'Usuário' }}</span>
+          <button class="logout-btn" (click)="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            Sair
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

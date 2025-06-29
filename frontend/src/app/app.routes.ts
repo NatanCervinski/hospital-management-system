@@ -3,6 +3,8 @@ import { LoginComponent } from './components/login/login.component';
 import { PatientRegistrationComponent } from './components/patient-registration/patient-registration.component';
 import { FuncionarioDashboardComponent } from './components/dashboard/funcionario-dashboard/funcionario-dashboard.component';
 import { PacienteDashboardComponent } from './components/dashboard/paciente-dashboard/paciente-dashboard.component';
+import { AdminLayoutComponent } from './components/admin-layout/admin-layout.component';
+import { FuncionarioPageComponent } from './components/funcionario-page/funcionario-page.component';
 import { authGuard, loginGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -22,9 +24,29 @@ export const routes: Routes = [
     canActivate: [loginGuard]
   },
   {
+    path: 'admin',
+    component: AdminLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'funcionarios',
+        component: FuncionarioPageComponent
+      },
+      {
+        path: 'dashboard',
+        component: FuncionarioDashboardComponent
+      },
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      }
+    ]
+  },
+  {
     path: 'dashboard/funcionario',
-    component: FuncionarioDashboardComponent,
-    canActivate: [authGuard]
+    redirectTo: '/admin/dashboard',
+    pathMatch: 'full'
   },
   {
     path: 'dashboard/paciente',

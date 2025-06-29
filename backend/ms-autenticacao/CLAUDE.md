@@ -24,20 +24,35 @@ This is a Spring Boot microservice for authentication in a hospital management s
 # Build the project
 ./mvnw clean package
 
+# Build without tests
+./mvnw clean package -DskipTests
+
 # Run locally (requires PostgreSQL and Redis running)
 ./mvnw spring-boot:run
 
 # Run with Docker Compose (recommended)
 docker-compose up --build
 
+# Run in detached mode
+docker-compose up --build -d
+
 # Run only database and Redis dependencies
 docker-compose up ms-autenticacao-db redis
+
+# Stop all services
+docker-compose down
+
+# View logs
+docker-compose logs -f ms-autenticacao
 ```
 
 ### Testing
 ```bash
 # Run unit tests
 ./mvnw test
+
+# Run single test class
+./mvnw test -Dtest=ClassName
 
 # Run integration tests with automated API testing
 ./testes.sh
@@ -51,7 +66,12 @@ docker-compose up ms-autenticacao-db redis
 # Test email functionality and notifications
 ./test_email_functionality.sh
 
-# The test scripts require httpie (http command) to be installed
+# Test patient functionality
+./test_paciente_functionality.sh
+
+# Prerequisites: httpie and jq must be installed
+# sudo apt install httpie jq (Ubuntu/Debian)
+# brew install httpie jq (macOS)
 ```
 
 ### Database
@@ -121,6 +141,7 @@ SMTP configuration in `application.properties`:
 - `spring.jpa.hibernate.ddl-auto=create`: Recreates schema on startup
 - `data.sql`: Contains initial data (pre-configured employees)
 - Database is automatically initialized with default funcionario account
+- Default credentials: `func_pre@hospital.com` / `TADS` (FUNCIONARIO role)
 
 ## Testing Notes
 

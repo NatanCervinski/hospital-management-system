@@ -1,0 +1,101 @@
+<div class="funcionario-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <i class="fas fa-users"></i>
+        Gerenciar Funcionários
+      </h1>
+      <button
+        class="btn btn-primary"
+        (click)="openCreateModal()"
+        [disabled]="loading">
+        <i class="fas fa-plus"></i>
+        Cadastrar Novo Funcionário
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ error }}
+  </div>
+
+  <!-- Main Content -->
+  <div class="content-card">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+      <div class="spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+      </div>
+      <p>Carregando funcionários...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && funcionarios.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <h3>Nenhum funcionário encontrado</h3>
+      <p>Cadastre o primeiro funcionário clicando no botão "Cadastrar Novo Funcionário".</p>
+    </div>
+
+    <!-- Employee Table -->
+    <div *ngIf="!loading && funcionarios.length > 0" class="table-container">
+      <table class="employee-table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Telefone</th>
+            <th>Status</th>
+            <th class="actions-column">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let funcionario of funcionarios" class="table-row">
+            <td class="name-cell">
+              <div class="name-content">
+                <strong>{{ funcionario.nome }}</strong>
+                <small class="cpf-text">CPF: {{ funcionario.cpf }}</small>
+              </div>
+            </td>
+            <td>{{ funcionario.email }}</td>
+            <td>{{ funcionario.telefone }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(funcionario.ativo)">
+                {{ getStatusText(funcionario.ativo) }}
+              </span>
+            </td>
+            <td class="actions-cell">
+              <div class="action-buttons">
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  (click)="openEditModal(funcionario)"
+                  title="Editar funcionário">
+                  <i class="fas fa-edit"></i>
+                  Editar
+                </button>
+                <button
+                  *ngIf="funcionario.status === 'ATIVO'"
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="deactivateFuncionario(funcionario)"
+                  title="Inativar funcionário">
+                  <i class="fas fa-ban"></i>
+                  Inativar
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal Component -->
+  <app-funcionario-modal
+    #funcionarioModal
+    (funcionarioSaved)="onFuncionarioSaved()">
+  </app-funcionario-modal>
+</div>

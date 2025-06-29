@@ -1,32 +1,21 @@
-# Use Node.js 20 Alpine for smaller image size
-FROM node:20-alpine
+# Use a imagem oficial do Node.js
+FROM node:20
 
-# Set working directory
+# Define o diretório de trabalho dentro do contêiner
 WORKDIR /app
 
-# Copy package files first for better caching
+# Copia APENAS os arquivos de manifesto de pacotes
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Instala as dependências da aplicação
+# Isso inclui as dependências de produção e desenvolvimento (como o nodemon)
+RUN npm install
 
-# Copy application code
+# Agora copia o resto do código-fonte da aplicação
 COPY . .
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S gateway -u 1001
-
-# Change ownership of the app directory
-RUN chown -R gateway:nodejs /app
-USER gateway
-
-# Expose port
+# Expõe a porta que a aplicação vai rodar
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
-
-# Start the application
-CMD ["npm", "start"]
+# O comando padrão para produção (será sobrescrito no modo dev)
+CMD [ "node", "src/app.js" ]

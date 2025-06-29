@@ -1,0 +1,140 @@
+<!-- Modal Backdrop -->
+<div *ngIf="isOpen" class="modal-backdrop" (click)="closeModal()">
+  
+  <!-- Modal Container -->
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <i class="fas" [ngClass]="isEditMode ? 'fa-edit' : 'fa-plus'"></i>
+        {{ isEditMode ? 'Editar Funcionário' : 'Cadastrar Novo Funcionário' }}
+      </h2>
+      <button class="close-button" (click)="closeModal()" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      
+      <!-- Error Message -->
+      <div *ngIf="error" class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i>
+        {{ error }}
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="funcionarioForm" (ngSubmit)="onSubmit()" class="funcionario-form">
+        
+        <!-- Nome Field -->
+        <div class="form-group">
+          <label for="nome" class="form-label">
+            Nome Completo *
+          </label>
+          <input
+            id="nome"
+            type="text"
+            class="form-control"
+            [class.is-invalid]="hasFieldError('nome')"
+            formControlName="nome"
+            placeholder="Digite o nome completo">
+          <div *ngIf="hasFieldError('nome')" class="invalid-feedback">
+            {{ getFieldErrorMessage('nome') }}
+          </div>
+        </div>
+
+        <!-- CPF Field (only for create mode) -->
+        <div *ngIf="!isEditMode" class="form-group">
+          <label for="cpf" class="form-label">
+            CPF *
+          </label>
+          <input
+            id="cpf"
+            type="text"
+            class="form-control"
+            [class.is-invalid]="hasFieldError('cpf')"
+            formControlName="cpf"
+            placeholder="000.000.000-00"
+            maxlength="14"
+            (input)="onCpfInput($event)">
+          <div *ngIf="hasFieldError('cpf')" class="invalid-feedback">
+            {{ getFieldErrorMessage('cpf') }}
+          </div>
+          <small class="form-text">O CPF não poderá ser alterado após o cadastro.</small>
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-group">
+          <label for="email" class="form-label">
+            Email *
+          </label>
+          <input
+            id="email"
+            type="email"
+            class="form-control"
+            [class.is-invalid]="hasFieldError('email')"
+            formControlName="email"
+            placeholder="exemplo@hospital.com">
+          <div *ngIf="hasFieldError('email')" class="invalid-feedback">
+            {{ getFieldErrorMessage('email') }}
+          </div>
+        </div>
+
+        <!-- Telefone Field -->
+        <div class="form-group">
+          <label for="telefone" class="form-label">
+            Telefone *
+          </label>
+          <input
+            id="telefone"
+            type="text"
+            class="form-control"
+            [class.is-invalid]="hasFieldError('telefone')"
+            formControlName="telefone"
+            placeholder="(00) 00000-0000"
+            maxlength="15"
+            (input)="onTelefoneInput($event)">
+          <div *ngIf="hasFieldError('telefone')" class="invalid-feedback">
+            {{ getFieldErrorMessage('telefone') }}
+          </div>
+        </div>
+
+        <!-- Password Info (only for create mode) -->
+        <div *ngIf="!isEditMode" class="password-info">
+          <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            <div class="info-content">
+              <strong>Senha automática:</strong>
+              <p>Uma senha será gerada automaticamente e enviada para o email do funcionário.</p>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button 
+        type="button" 
+        class="btn btn-secondary" 
+        (click)="closeModal()"
+        [disabled]="loading">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </button>
+      
+      <button 
+        type="submit" 
+        class="btn btn-primary"
+        [disabled]="loading || funcionarioForm.invalid"
+        (click)="onSubmit()">
+        <i *ngIf="loading" class="fas fa-spinner fa-spin"></i>
+        <i *ngIf="!loading" class="fas" [ngClass]="isEditMode ? 'fa-save' : 'fa-plus'"></i>
+        {{ loading ? 'Salvando...' : (isEditMode ? 'Salvar Alterações' : 'Cadastrar Funcionário') }}
+      </button>
+    </div>
+
+  </div>
+</div>

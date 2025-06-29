@@ -37,11 +37,11 @@ public class FuncionarioService {
    * Lista funcionários com paginação e filtros
    */
   public Page<FuncionarioListDTO> listarFuncionarios(Pageable pageable, String search, Boolean ativo) {
-    log.info("Listando funcionários - Página: {}, Busca: '{}', Ativo: {}", 
+    log.info("Listando funcionários - Página: {}, Busca: '{}', Ativo: {}",
         pageable.getPageNumber(), search, ativo);
 
     List<UsuarioModel> usuarios = usuarioRepository.findAll();
-    
+
     // Filtrar apenas funcionários
     List<FuncionarioModel> funcionarios = usuarios.stream()
         .filter(usuario -> usuario instanceof FuncionarioModel)
@@ -52,8 +52,7 @@ public class FuncionarioService {
     if (search != null && !search.trim().isEmpty()) {
       String searchLower = search.toLowerCase();
       funcionarios = funcionarios.stream()
-          .filter(func -> 
-              (func.getNome() != null && func.getNome().toLowerCase().contains(searchLower)) ||
+          .filter(func -> (func.getNome() != null && func.getNome().toLowerCase().contains(searchLower)) ||
               (func.getEmail() != null && func.getEmail().toLowerCase().contains(searchLower)) ||
               (func.getCpf() != null && func.getCpf().contains(search.replaceAll("[^0-9]", ""))))
           .collect(Collectors.toList());
@@ -64,6 +63,7 @@ public class FuncionarioService {
           .filter(func -> ativo.equals(func.getAtivo()))
           .collect(Collectors.toList());
     }
+    log.info("dados dos funcionarios: {}", funcionarios);
 
     // Converter para DTO
     List<FuncionarioListDTO> funcionariosDTO = funcionarios.stream()
@@ -73,7 +73,7 @@ public class FuncionarioService {
     // Simular paginação (em uma implementação real, usaria query com LIMIT/OFFSET)
     int start = (int) pageable.getOffset();
     int end = Math.min((start + pageable.getPageSize()), funcionariosDTO.size());
-    
+
     List<FuncionarioListDTO> paginatedList;
     if (start <= funcionariosDTO.size()) {
       paginatedList = funcionariosDTO.subList(start, end);
@@ -82,7 +82,7 @@ public class FuncionarioService {
     }
 
     log.info("Retornando {} funcionários de um total de {}", paginatedList.size(), funcionariosDTO.size());
-    
+
     return new PageImpl<>(paginatedList, pageable, funcionariosDTO.size());
   }
 
@@ -105,7 +105,7 @@ public class FuncionarioService {
 
     FuncionarioModel funcionario = (FuncionarioModel) usuario;
     log.info("Funcionário encontrado: {}", funcionario.getEmail());
-    
+
     return converterParaResponseDTO(funcionario);
   }
 
@@ -122,7 +122,7 @@ public class FuncionarioService {
       // 2. Determinar senha
       String senhaFinal;
       boolean senhaTemporaria;
-      
+
       if (dto.getSenha() != null && !dto.getSenha().trim().isEmpty()) {
         senhaFinal = dto.getSenha();
         senhaTemporaria = dto.getSenhaTemporaria() != null ? dto.getSenhaTemporaria() : false;
@@ -141,7 +141,7 @@ public class FuncionarioService {
 
       // 5. Salvar no banco
       FuncionarioModel funcionarioSalvo = usuarioRepository.save(funcionario);
-      log.info("Funcionário criado com sucesso. ID: {}, Email: {}", 
+      log.info("Funcionário criado com sucesso. ID: {}, Email: {}",
           funcionarioSalvo.getId(), funcionarioSalvo.getEmail());
 
       // 6. Enviar credenciais por e-mail se senha foi gerada
@@ -175,9 +175,7 @@ public class FuncionarioService {
       FuncionarioModel funcionario = (FuncionarioModel) usuario;
 
       // 2. Validar dados únicos (excluindo o próprio funcionário)
-      if (dto.getCpf() != null) {
-        validarDadosUnicos(dto.getCpf(), null, id);
-      }
+      // CPF não pode ser alterado (R14), então só validamos email
       if (dto.getEmail() != null) {
         validarDadosUnicos(null, dto.getEmail(), id);
       }
@@ -194,7 +192,7 @@ public class FuncionarioService {
         funcionario.setSenhaTemporaria(false);
         log.debug("Senha atualizada para funcionário ID: {}", id);
         alteracaoSignificativa = true;
-        
+
         // Notificar sobre alteração de senha
         notificarResetSenha(funcionario, dto.getSenha());
       }
@@ -232,9 +230,9 @@ public class FuncionarioService {
 
       FuncionarioModel funcionario = (FuncionarioModel) usuario;
       funcionario.setAtivo(false);
-      
+
       usuarioRepository.save(funcionario);
-      log.info("Funcionário desativado com sucesso. ID: {}, Email: {}", 
+      log.info("Funcionário desativado com sucesso. ID: {}, Email: {}",
           funcionario.getId(), funcionario.getEmail());
 
       // Notificar sobre desativação
@@ -263,9 +261,9 @@ public class FuncionarioService {
       FuncionarioModel funcionario = (FuncionarioModel) usuario;
       boolean statusAnterior = funcionario.getAtivo();
       funcionario.setAtivo(!statusAnterior);
-      
+
       FuncionarioModel funcionarioAtualizado = usuarioRepository.save(funcionario);
-      log.info("Status do funcionário alterado. ID: {}, Ativo: {} -> {}", 
+      log.info("Status do funcionário alterado. ID: {}, Ativo: {} -> {}",
           funcionario.getId(), statusAnterior, funcionario.getAtivo());
 
       // Notificar sobre mudança de status
@@ -287,9 +285,9 @@ public class FuncionarioService {
   private void validarDadosUnicos(String cpf, String email, Integer idExcluir) {
     if (cpf != null) {
       Optional<UsuarioModel> usuarioComCpf = usuarioRepository.findByCpf(cpf);
-      if (usuarioComCpf.isPresent() && 
+      if (usuarioComCpf.isPresent() &&
           (idExcluir == null || !usuarioComCpf.get().getId().equals(idExcluir))) {
-        log.warn("Tentativa de usar CPF já existente: {}", 
+        log.warn("Tentativa de usar CPF já existente: {}",
             cpf.substring(0, 3) + "***");
         throw new RuntimeException("CPF já cadastrado no sistema");
       }
@@ -297,7 +295,7 @@ public class FuncionarioService {
 
     if (email != null) {
       Optional<UsuarioModel> usuarioComEmail = usuarioRepository.findByEmail(email);
-      if (usuarioComEmail.isPresent() && 
+      if (usuarioComEmail.isPresent() &&
           (idExcluir == null || !usuarioComEmail.get().getId().equals(idExcluir))) {
         log.warn("Tentativa de usar email já existente: {}", email);
         throw new RuntimeException("E-mail já cadastrado no sistema");
@@ -317,8 +315,8 @@ public class FuncionarioService {
   /**
    * Cria FuncionarioModel a partir do DTO de criação
    */
-  private FuncionarioModel criarFuncionarioModel(CreateFuncionarioAdminDTO dto, String hashSenha, 
-                                                  String salt, boolean senhaTemporaria) {
+  private FuncionarioModel criarFuncionarioModel(CreateFuncionarioAdminDTO dto, String hashSenha,
+      String salt, boolean senhaTemporaria) {
     FuncionarioModel funcionario = new FuncionarioModel();
 
     // Dados básicos
@@ -360,10 +358,7 @@ public class FuncionarioService {
       alterou = true;
     }
 
-    if (dto.getCpf() != null && !dto.getCpf().equals(funcionario.getCpf())) {
-      funcionario.setCpf(dto.getCpf());
-      alterou = true;
-    }
+    // CPF não pode ser alterado conforme requisito R14
 
     if (dto.getEmail() != null && !dto.getEmail().equals(funcionario.getEmail())) {
       funcionario.setEmail(dto.getEmail());
@@ -376,20 +371,20 @@ public class FuncionarioService {
     }
 
     // Atualizar endereço se algum campo foi fornecido
-    if (dto.getCep() != null || dto.getRua() != null || dto.getCidade() != null || 
+    if (dto.getCep() != null || dto.getRua() != null || dto.getCidade() != null ||
         dto.getEstado() != null || dto.getBairro() != null) {
-      
+
       funcionario.definirEndereco(
           dto.getRua(),
           dto.getBairro(),
           dto.getCidade(),
           dto.getEstado() != null ? dto.getEstado().toUpperCase() : null,
           dto.getCep());
-      
+
       if (dto.getNumero() != null || dto.getComplemento() != null) {
         funcionario.definirNumeroComplemento(dto.getNumero(), dto.getComplemento());
       }
-      
+
       alterou = true;
     }
 
@@ -431,6 +426,7 @@ public class FuncionarioService {
         .nome(funcionario.getNome())
         .email(funcionario.getEmail())
         .telefone(funcionario.getTelefone())
+        .cpf(formatarCpf(funcionario.getCpf()))
         .matricula(funcionario.getMatricula())
         .ativo(funcionario.getAtivo())
         .dataCadastro(funcionario.getDataCadastro())
@@ -443,7 +439,8 @@ public class FuncionarioService {
    * Formata CPF para exibição
    */
   private String formatarCpf(String cpf) {
-    if (cpf == null || cpf.length() != 11) return cpf;
+    if (cpf == null || cpf.length() != 11)
+      return cpf;
     return String.format("%s.%s.%s-%s",
         cpf.substring(0, 3),
         cpf.substring(3, 6),
@@ -459,14 +456,14 @@ public class FuncionarioService {
 
       // Usar novo método específico para criação por admin
       emailService.enviarNotificacaoAdminCriacao(
-          funcionario.getEmail(), 
-          funcionario.getNome(), 
+          funcionario.getEmail(),
+          funcionario.getNome(),
           senha);
 
       log.debug("Solicitação de envio de credenciais processada para: {}", funcionario.getEmail());
 
     } catch (Exception e) {
-      log.error("Erro ao solicitar envio de credenciais para {}: {}", 
+      log.error("Erro ao solicitar envio de credenciais para {}: {}",
           funcionario.getEmail(), e.getMessage());
       // O envio é assíncrono, então erros específicos serão tratados no EmailService
     }
@@ -478,13 +475,13 @@ public class FuncionarioService {
 
       // Usar novo método específico para alterações importantes
       emailService.enviarNotificacaoAlteracaoImportante(
-          funcionario.getEmail(), 
+          funcionario.getEmail(),
           funcionario.getNome());
 
       log.debug("Solicitação de notificação de alteração processada para: {}", funcionario.getEmail());
 
     } catch (Exception e) {
-      log.error("Erro ao solicitar envio de notificação de alteração para {}: {}", 
+      log.error("Erro ao solicitar envio de notificação de alteração para {}: {}",
           funcionario.getEmail(), e.getMessage());
       // O envio é assíncrono, então erros específicos serão tratados no EmailService
     }
@@ -497,14 +494,14 @@ public class FuncionarioService {
 
       // Usar novo método específico para alteração de status
       emailService.enviarNotificacaoAlteracaoStatus(
-          funcionario.getEmail(), 
-          funcionario.getNome(), 
+          funcionario.getEmail(),
+          funcionario.getNome(),
           funcionario.getAtivo());
 
       log.debug("Solicitação de notificação de status processada para: {}", funcionario.getEmail());
 
     } catch (Exception e) {
-      log.error("Erro ao solicitar envio de notificação de status para {}: {}", 
+      log.error("Erro ao solicitar envio de notificação de status para {}: {}",
           funcionario.getEmail(), e.getMessage());
       // O envio é assíncrono, então erros específicos serão tratados no EmailService
     }
@@ -516,14 +513,14 @@ public class FuncionarioService {
 
       // Usar método de alteração de status (desativação = ativo=false)
       emailService.enviarNotificacaoAlteracaoStatus(
-          funcionario.getEmail(), 
-          funcionario.getNome(), 
+          funcionario.getEmail(),
+          funcionario.getNome(),
           false); // false = desativado
 
       log.debug("Solicitação de notificação de desativação processada para: {}", funcionario.getEmail());
 
     } catch (Exception e) {
-      log.error("Erro ao solicitar envio de notificação de desativação para {}: {}", 
+      log.error("Erro ao solicitar envio de notificação de desativação para {}: {}",
           funcionario.getEmail(), e.getMessage());
       // O envio é assíncrono, então erros específicos serão tratados no EmailService
     }
@@ -535,14 +532,14 @@ public class FuncionarioService {
 
       // Usar método específico para reset de senha
       emailService.enviarNotificacaoResetSenha(
-          funcionario.getEmail(), 
-          funcionario.getNome(), 
+          funcionario.getEmail(),
+          funcionario.getNome(),
           novaSenha);
 
       log.debug("Solicitação de notificação de reset de senha processada para: {}", funcionario.getEmail());
 
     } catch (Exception e) {
-      log.error("Erro ao solicitar envio de notificação de reset de senha para {}: {}", 
+      log.error("Erro ao solicitar envio de notificação de reset de senha para {}: {}",
           funcionario.getEmail(), e.getMessage());
       // O envio é assíncrono, então erros específicos serão tratados no EmailService
     }

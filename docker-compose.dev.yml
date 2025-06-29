@@ -1,0 +1,30 @@
+# docker-compose.dev.yml
+
+services:
+  # Sobrescreve o serviço do frontend
+  frontend:
+    volumes:
+      # Adicione o :z aqui também para prevenir o mesmo erro
+      - ./frontend:/app:z 
+    command: npm start
+  # Sobrescreve a API Gateway
+  api-gateway:
+      volumes:
+        - ./api-gateway:/app:z
+        # A linha abaixo é importante para preservar a pasta node_modules
+        # instalada pela imagem, caso você não a tenha localmente.
+        - /app/node_modules
+      # ANTES:
+      # command: npm run dev
+      # DEPOIS (Chamada direta e explícita ao nodemon):
+      command: [ "node", "./node_modules/.bin/nodemon", "src/app.js" ] 
+  # Seus serviços de backend com a correção que você já fez
+  ms-autenticacao:
+    volumes:
+      - ./backend/ms-autenticacao:/app:z
+    entrypoint: [ "/bin/sh", "-c", "./mvnw spring-boot:run" ]
+
+  ms-paciente:
+    volumes:
+      - ./backend/ms-paciente:/app:z
+    entrypoint: [ "/bin/sh", "-c", "./mvnw spring-boot:run" ]
