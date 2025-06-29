@@ -1,4 +1,4 @@
-package br.edu.ufpr.hospital.consulta.controller;
+package br.ufpr.hospital.consulta.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
