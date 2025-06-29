@@ -1,4 +1,4 @@
-package br.edu.ufpr.hospital.consulta;
+package br.ufpr.hospital.consulta;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

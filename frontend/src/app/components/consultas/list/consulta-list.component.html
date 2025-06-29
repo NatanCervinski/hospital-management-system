@@ -1,0 +1,45 @@
+<div class="container mt-4">
+  <h2>Consultas nas próximas 48 horas</h2>
+
+  <div *ngIf="loading">Carregando...</div>
+
+  <table *ngIf="!loading && consultas.length > 0" class="table table-striped mt-3">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Data/Hora</th>
+        <th>Especialidade</th>
+        <th>Médico</th>
+        <th>Valor (R$)</th>
+        <th>Vagas</th>
+        <th>Status</th>
+      <th>Ações</th>
+    <td>
+          <button class="btn btn-sm btn-primary me-1">Confirmar</button>
+          <button class="btn btn-sm btn-danger me-1">Cancelar</button>
+          <button class="btn btn-sm btn-success">Realizar</button>
+        </td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let c of consultas">
+        <td>{{ c.codigo }}</td>
+        <td>{{ c.dataHora | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td>{{ c.especialidade }}</td>
+        <td>{{ c.medico }}</td>
+        <td>{{ c.valor | currency:'BRL' }}</td>
+        <td>{{ c.vagas }}</td>
+        <td>{{ c.status }}</td>
+      <td>
+          <button class="btn btn-sm btn-primary me-1">Confirmar</button>
+          <button class="btn btn-sm btn-danger me-1">Cancelar</button>
+          <button class="btn btn-sm btn-success">Realizar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loading && consultas.length === 0" class="alert alert-info mt-3">
+    Nenhuma consulta nas próximas 48h.
+  </div>
+</div>

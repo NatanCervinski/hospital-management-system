@@ -1,0 +1,8 @@
+br/edu/ufpr/hospital/consulta/repository/ConsultaRepository.class
+br/edu/ufpr/hospital/consulta/dto/ConsultaDTO.class
+br/edu/ufpr/hospital/consulta/model/Consulta.class
+br/edu/ufpr/hospital/consulta/model/Consulta$StatusConsulta.class
+br/ufpr/hospital/consulta/controller/HealthCheckController.class
+br/edu/ufpr/hospital/consulta/controller/ConsultaController.class
+br/edu/ufpr/hospital/consulta/service/ConsultaService.class
+br/ufpr/hospital/consulta/MsConsultaApplication.class

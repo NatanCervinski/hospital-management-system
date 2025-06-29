@@ -1,3 +1,4 @@
+import { ConsultaCadastroComponent } from './components/consultas/cadastro/consulta-cadastro.component';
 import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
 import { PatientRegistrationComponent } from './components/patient-registration/patient-registration.component';
@@ -6,6 +7,7 @@ import { PacienteDashboardComponent } from './components/dashboard/paciente-dash
 import { AdminLayoutComponent } from './components/admin-layout/admin-layout.component';
 import { FuncionarioPageComponent } from './components/funcionario-page/funcionario-page.component';
 import { authGuard, loginGuard } from './guards/auth.guard';
+import { ConsultaListComponent } from './components/consultas/list/consulta-list.component';
 
 export const routes: Routes = [
   {
@@ -58,6 +60,17 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./components/dashboard/dashboard-redirect.component').then(m => m.DashboardRedirectComponent)
   },
+  {
+    path: 'consultas',
+    component: ConsultaListComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'consultas/cadastrar',
+    component: ConsultaCadastroComponent,
+    canActivate: [authGuard]
+  },
+
   {
     path: '**',
     redirectTo: '/login'

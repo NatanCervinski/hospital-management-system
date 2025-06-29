@@ -37,6 +37,7 @@ public class PacienteCadastroDTO {
     @NotBlank(message = "Logradouro é obrigatório.")
     private String logradouro;
 
+    
     private String numero;
 
     private String complemento;

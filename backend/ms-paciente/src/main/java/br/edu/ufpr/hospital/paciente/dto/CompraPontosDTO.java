@@ -12,3 +12,4 @@ public class CompraPontosDTO {
     @DecimalMin(value = "0.01", message = "O valor deve ser maior que zero.")
     private BigDecimal valorReais;
 }
+

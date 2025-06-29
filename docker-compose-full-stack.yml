@@ -1,6 +1,4 @@
-# Docker Compose para executar todo o sistema hospitalar
-# API Gateway + MS Autenticacao + MS Paciente + Bancos de Dados + Redis
-# Execute com: docker-compose -f docker-compose-full-stack.yml up --build
+version: '3.8'
 
 services:
   # ============================================================================
@@ -44,7 +42,7 @@ services:
       - PORT=3000
       - MS_AUTENTICACAO_URL=http://ms-autenticacao:8081
       - MS_PACIENTE_URL=http://ms-paciente:8083
-      - MS_CONSULTA_URL=http://ms-consulta:8080
+      - MS_CONSULTA_URL=http://ms-consulta:8085
       - JWT_SECRET=minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem
       - REDIS_URL=redis://redis-server:6379
       - CORS_ORIGIN=*
@@ -71,12 +69,12 @@ services:
   # MS AUTENTICACAO
   # ============================================================================
   ms-autenticacao:
-    build: 
+    build:
       context: ./backend/ms-autenticacao
       dockerfile: Dockerfile
     container_name: ms-autenticacao-app
     ports:
-      - "8081:8081" # MS Autenticacao na porta 8081
+      - "8081:8081"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://ms-autenticacao-db:5432/ms_autenticacao
@@ -87,11 +85,8 @@ services:
       JWT_SECRET: minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem
       JWT_EXPIRATION: 86400000
       APP_DATA_LOAD_INITIAL: true
-      # Email configuration
       SPRING_MAIL_HOST: smtp.gmail.com
       SPRING_MAIL_PORT: 587
-      #SPRING_MAIL_USERNAME: ${EMAIL_USERNAME:-}
-      #SPRING_MAIL_PASSWORD: ${EMAIL_PASSWORD:-}
     depends_on:
       ms-autenticacao-db:
         condition: service_healthy
@@ -116,19 +111,18 @@ services:
       dockerfile: Dockerfile
     container_name: ms-paciente-app
     ports:
-      - "8083:8083" # MS Paciente na porta 8083
+      - "8083:8083"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://ms-paciente-db:5432/hospital_paciente
       SPRING_DATASOURCE_USERNAME: dac
       SPRING_DATASOURCE_PASSWORD: 123
       JWT_SECRET: minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_SECRET_KEY: minhaChaveSecretaSuperSeguraParaJWT2025HospitalSystem
-      # MS Autenticacao URL for inter-service communication
       MS_AUTENTICACAO_URL: http://ms-autenticacao:8081
     depends_on:
       ms-paciente-db:
         condition: service_healthy
-      ms-autenticacao: # MS Paciente depende do MS Autenticacao para funcionar
+      ms-autenticacao:
         condition: service_healthy
     networks:
       - hospital-net
@@ -141,10 +135,31 @@ services:
       start_period: 120s
 
   # ============================================================================
+  # MS CONSULTA
+  # ============================================================================
+  ms-consulta:
+    build:
+      context: ./backend/ms-consulta
+      dockerfile: Dockerfile
+    container_name: ms-consulta
+    ports:
+      - "8085:8085"
+    networks:
+      - hospital-net
+    restart: on-failure:3
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      interval: 45s
+      timeout: 15s
+      retries: 3
+      start_period: 90s
+
+  # ============================================================================
   # BANCOS DE DADOS
   # ============================================================================
-  
-  # Banco do MS Autenticacao
   ms-autenticacao-db:
     image: postgres:16-alpine
     container_name: ms-autenticacao-db
@@ -153,7 +168,7 @@ services:
       POSTGRES_USER: dac
       POSTGRES_PASSWORD: 123
     ports:
-      - "5432:5432" # Banco do MS Autenticacao
+      - "5432:5432"
     volumes:
       - autenticacao_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -166,7 +181,6 @@ services:
       - hospital-net
     restart: on-failure:5
 
-  # Banco do MS Paciente
   ms-paciente-db:
     image: postgres:16-alpine
     container_name: ms-paciente-db
@@ -175,7 +189,7 @@ services:
       POSTGRES_USER: dac
       POSTGRES_PASSWORD: 123
     ports:
-      - "5434:5432" # Banco do MS Paciente (porta diferente para não conflitar)
+      - "5434:5432"
     volumes:
       - paciente_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -188,9 +202,6 @@ services:
       - hospital-net
     restart: on-failure:5
 
-  # ============================================================================
-  # REDIS (para blacklist de JWT e cache)
-  # ============================================================================
   redis-server:
     image: redis:7-alpine
     container_name: redis-server
@@ -209,9 +220,6 @@ services:
       - hospital-net
     restart: on-failure:5
 
-# ============================================================================
-# VOLUMES E REDES
-# ============================================================================
 volumes:
   autenticacao_db_data:
     driver: local
