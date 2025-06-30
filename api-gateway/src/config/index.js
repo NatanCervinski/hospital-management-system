@@ -17,7 +17,7 @@ module.exports = {
       timeout: 30000
     },
     consulta: {
-      url: process.env.MS_CONSULTA_URL || 'http://ms-consulta:8080',
+      url: process.env.MS_CONSULTA_URL || 'http://ms-consulta:8085',
       timeout: 30000
     }
   },

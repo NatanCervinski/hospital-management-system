@@ -4,53 +4,30 @@ const ProxyService = require('../services/proxy');
 
 const router = express.Router();
 
-// Rotas que requerem privilégios de funcionário
-const funcionarioOnlyRoutes = [
-  '/create',
-  '/admin',
-  '/manage'
-];
+// ========== EMPLOYEE-ONLY ROUTES (FUNCIONARIO) ==========
+// Based on ConsultaController.java endpoints with @PreAuthorize("hasRole('FUNCIONARIO')")
 
-// Rotas que requerem ser paciente
-const pacienteOnlyRoutes = [
-  '/schedule',
-  '/my-appointments',
-  '/cancel-patient'
-];
+// Consultation management endpoints
 
-// Rotas que podem ser acessadas por ambos (com autenticação)
-const authenticatedRoutes = [
-  '/search',
-  '/available',
-  '/details'
-];
+router.post('/', authenticateToken, requireFuncionario, ProxyService.createProxyMiddleware());
+router.get('/dashboard', authenticateToken, requireFuncionario, ProxyService.createProxyMiddleware());
+router.put('/:consultaId/cancelar', authenticateToken, requireFuncionario, ProxyService.createProxyMiddleware());
+router.put('/:consultaId/realizar', authenticateToken, requireFuncionario, ProxyService.createProxyMiddleware());
+router.put('/agendamento/confirmar', authenticateToken, requireFuncionario, ProxyService.createProxyMiddleware());
 
-// Middleware para verificar permissões baseado na rota
-router.use((req, res, next) => {
-  // Verificar se é rota restrita a funcionários
-  if (funcionarioOnlyRoutes.some(route => req.path.startsWith(route))) {
-    return authenticateToken(req, res, (err) => {
-      if (err) return next(err);
-      return requireFuncionario(req, res, next);
-    });
-  }
-  
-  // Verificar se é rota restrita a pacientes
-  if (pacienteOnlyRoutes.some(route => req.path.startsWith(route))) {
-    return authenticateToken(req, res, (err) => {
-      if (err) return next(err);
-      return requirePaciente(req, res, next);
-    });
-  }
-  
-  // Para outras rotas autenticadas
-  if (authenticatedRoutes.some(route => req.path.startsWith(route))) {
-    return authenticateToken(req, res, next);
-  }
-  
-  // Rotas gerais requerem autenticação
-  return authenticateToken(req, res, next);
-});
+// ========== PATIENT-ONLY ROUTES (PACIENTE) ==========
+
+router.post('/consulta/:consultaId', authenticateToken, requirePaciente, ProxyService.createProxyMiddleware());
+router.put('/:agendamentoId/cancelar', authenticateToken, requirePaciente, ProxyService.createProxyMiddleware());
+router.put('/:agendamentoId/checkin', authenticateToken, requirePaciente, ProxyService.createProxyMiddleware());
+router.get('/paciente', authenticateToken, requirePaciente, ProxyService.createProxyMiddleware());
+// ========== PUBLIC ROUTES (NO AUTH REQUIRED) ==========
+// Based on ConsultaController.java search endpoints without @PreAuthorize
+
+// Consultation search endpoints - accessible by both patients and employees
+router.get('/buscar', authenticateToken, ProxyService.createProxyMiddleware()); // GET /consultas/buscar - Search available consultations (R05)
+router.get('/buscar/especialidade/:especialidade', authenticateToken, ProxyService.createProxyMiddleware()); // GET /consultas/buscar/especialidade/{especialidade} - Search by specialty (R05)
+router.get('/buscar/medico', authenticateToken, ProxyService.createProxyMiddleware()); // GET /consultas/buscar/medico?medico=name - Search by doctor (R05)
 
 // Middleware de logging específico para consultas
 router.use((req, res, next) => {
@@ -60,8 +37,5 @@ router.use((req, res, next) => {
   }
   next();
 });
-
-// Proxy para todas as rotas de consulta
-router.use('/', ProxyService.createProxyMiddleware());
 
 module.exports = router;

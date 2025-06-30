@@ -101,3 +101,5 @@ baseline.json
 .angular/
 
 .DS_Store
+
+/frontend/.angular/

@@ -14,7 +14,7 @@ router.use('/pacientes', pacienteRoutes);
 router.use('/consultas', consultaRoutes);
 router.use('/agendamentos', consultaRoutes); // Alias para consultas
 
-// Health check aggregation - checks both MS Autenticacao and MS Paciente
+// Health check aggregation - checks MS Autenticacao, MS Paciente, and MS Consulta
 router.get('/health', async (req, res) => {
   const healthResults = {
     gateway: {
@@ -67,6 +67,30 @@ router.get('/health', async (req, res) => {
     };
   } catch (error) {
     healthResults.services.paciente = {
+      status: 'DOWN',
+      error: error.message
+    };
+  }
+
+  // Check MS Consulta
+  try {
+    const consultaServiceConfig = ProxyService.getServiceConfig('/consultas');
+    const consultaResult = await ProxyService.forwardRequest(
+      consultaServiceConfig.url,
+      '/actuator/health',
+      'GET',
+      { 'Accept': 'application/json' },
+      null,
+      5000 // Shorter timeout for health checks
+    );
+    
+    healthResults.services.consulta = {
+      status: consultaResult.status === 200 ? 'UP' : 'DOWN',
+      responseTime: Date.now(),
+      details: consultaResult.data
+    };
+  } catch (error) {
+    healthResults.services.consulta = {
       status: 'DOWN',
       error: error.message
     };

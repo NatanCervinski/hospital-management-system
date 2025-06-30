@@ -22,39 +22,174 @@
   <!-- Authenticated State -->
   <div *ngIf="!isLoading && isAuthenticated" class="row">
     <div class="col-12">
-      <!-- Authentication Status -->
-      <div class="alert alert-success mb-4">
-        <div class="d-flex align-items-center">
-          <i class="fas fa-check-circle me-2"></i>
-          <div>
-            <strong>Logado com sucesso!</strong><br>
-            <small>
-              Usuário: {{ userName }} ({{ userEmail }}) |
-              Tipo: {{ user.tipo }} |
-              Token válido
-            </small>
-          </div>
-        </div>
-      </div>
-
+      <!-- Header with User Info -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h1 class="h3 hospital-brand">Dashboard do Funcionário</h1>
-          <p class="text-muted mb-0">Bem-vindo(a), {{ userName }}</p>
+          <p class="text-muted mb-0">
+            Bem-vindo(a), {{ userName }} | 
+            {{ userEmail }} | 
+            {{ userType }}
+          </p>
         </div>
         <button class="btn btn-outline-danger" (click)="logout()">
           <i class="fas fa-sign-out-alt me-2"></i>Sair
         </button>
       </div>
 
+      <!-- Consultations Dashboard Section (R08) -->
+      <div class="row mb-5">
+        <div class="col-12">
+          <div class="card card-shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div>
+                <h5 class="card-title mb-0">
+                  <i class="fas fa-calendar-check me-2 text-primary"></i>
+                  Consultas nas Próximas 48 Horas
+                </h5>
+                <small class="text-muted">Visualização em tempo real dos agendamentos</small>
+              </div>
+              <button 
+                class="btn btn-outline-primary btn-sm" 
+                (click)="refreshDashboard()"
+                [disabled]="isLoadingConsultas">
+                <i class="fas fa-sync-alt me-1" [class.fa-spin]="isLoadingConsultas"></i>
+                Atualizar
+              </button>
+            </div>
+            <div class="card-body">
+              
+              <!-- Loading State for Consultations -->
+              <div *ngIf="isLoadingConsultas" class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Carregando consultas...</span>
+                </div>
+                <p class="mt-2 text-muted">Carregando consultas...</p>
+              </div>
+
+              <!-- Error State -->
+              <div *ngIf="!isLoadingConsultas && consultasError" class="alert alert-danger">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-exclamation-circle me-2"></i>
+                  <div class="flex-grow-1">
+                    <strong>Erro ao carregar consultas:</strong><br>
+                    {{ consultasError }}
+                  </div>
+                  <button class="btn btn-outline-danger btn-sm" (click)="refreshDashboard()">
+                    <i class="fas fa-redo me-1"></i>Tentar Novamente
+                  </button>
+                </div>
+              </div>
+
+              <!-- Empty State -->
+              <div *ngIf="!isLoadingConsultas && !consultasError && consultas.length === 0" class="text-center py-5">
+                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Nenhuma consulta agendada</h5>
+                <p class="text-muted">Não há consultas agendadas para as próximas 48 horas.</p>
+                <button class="btn btn-primary" (click)="navegarParaConsultas()">
+                  <i class="fas fa-plus me-2"></i>Criar Nova Consulta
+                </button>
+              </div>
+
+              <!-- Consultations List -->
+              <div *ngIf="!isLoadingConsultas && !consultasError && consultas.length > 0" class="row">
+                <div class="col-12 col-lg-6 col-xl-4 mb-3" *ngFor="let consulta of consultas; trackBy: trackByConsultaId">
+                  <div class="card h-100 consultation-card" 
+                       [class.border-success]="consulta.status === 'DISPONIVEL'"
+                       [class.border-warning]="consulta.status === 'CANCELADA'"
+                       [class.border-info]="consulta.status === 'REALIZADA'">
+                    <div class="card-body">
+                      <!-- Status Badge -->
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge rounded-pill" 
+                              [class.bg-success]="consulta.status === 'DISPONIVEL'"
+                              [class.bg-warning]="consulta.status === 'CANCELADA'"
+                              [class.bg-info]="consulta.status === 'REALIZADA'">
+                          {{ consulta.status }}
+                        </span>
+                        <small class="text-muted">#{{ consulta.codigo }}</small>
+                      </div>
+
+                      <!-- Specialty and Doctor -->
+                      <h6 class="card-title text-primary mb-1">
+                        <i class="fas fa-stethoscope me-1"></i>
+                        {{ consulta.especialidade }}
+                      </h6>
+                      <p class="card-text mb-2">
+                        <i class="fas fa-user-md me-1 text-secondary"></i>
+                        <strong>{{ consulta.medico }}</strong>
+                      </p>
+
+                      <!-- Date and Time -->
+                      <p class="card-text mb-2">
+                        <i class="fas fa-clock me-1 text-primary"></i>
+                        <strong>{{ formatDateTime(consulta.dataHora) }}</strong>
+                      </p>
+
+                      <!-- Occupancy Information -->
+                      <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                          <span class="small text-muted">Ocupação:</span>
+                          <span class="small fw-bold">
+                            {{ consulta.vagasOcupadas }}/{{ consulta.vagas }} vagas
+                            ({{ formatTaxaOcupacao(consulta.taxaOcupacao) }})
+                          </span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                          <div class="progress-bar" 
+                               [class.bg-success]="consulta.taxaOcupacao < 0.7"
+                               [class.bg-warning]="consulta.taxaOcupacao >= 0.7 && consulta.taxaOcupacao < 0.9"
+                               [class.bg-danger]="consulta.taxaOcupacao >= 0.9"
+                               role="progressbar" 
+                               [style.width.%]="consulta.taxaOcupacao * 100"
+                               [attr.aria-valuenow]="consulta.taxaOcupacao * 100"
+                               aria-valuemin="0" 
+                               aria-valuemax="100">
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Value -->
+                      <p class="card-text mb-3">
+                        <i class="fas fa-money-bill-wave me-1 text-success"></i>
+                        <strong class="text-success">R$ {{ consulta.valor | number:'1.2-2':'pt' }}</strong>
+                      </p>
+
+                      <!-- Actions -->
+                      <div class="d-grid">
+                        <button 
+                          class="btn btn-outline-primary btn-sm" 
+                          (click)="gerenciarConsulta(consulta)">
+                          <i class="fas fa-cog me-1"></i>Gerenciar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions Section -->
       <div class="row">
+        <div class="col-12">
+          <h5 class="mb-3">
+            <i class="fas fa-bolt me-2 text-warning"></i>
+            Ações Rápidas
+          </h5>
+        </div>
+        
         <div class="col-md-4 mb-4">
           <div class="card card-shadow h-100">
             <div class="card-body text-center">
               <i class="fas fa-users fa-3x text-primary mb-3"></i>
               <h5 class="card-title">Pacientes</h5>
               <p class="card-text">Gerenciar cadastro de pacientes</p>
-              <button class="btn btn-hospital">Acessar</button>
+              <button class="btn btn-hospital" routerLink="/admin/funcionarios">
+                <i class="fas fa-arrow-right me-1"></i>Acessar
+              </button>
             </div>
           </div>
         </div>
@@ -65,7 +200,9 @@
               <i class="fas fa-calendar-alt fa-3x text-success mb-3"></i>
               <h5 class="card-title">Consultas</h5>
               <p class="card-text">Agendar e gerenciar consultas</p>
-              <button class="btn btn-success" routerLink="/consultas">Acessar</button>
+              <button class="btn btn-success" (click)="navegarParaConsultas()">
+                <i class="fas fa-arrow-right me-1"></i>Acessar
+              </button>
             </div>
           </div>
         </div>
@@ -76,7 +213,9 @@
               <i class="fas fa-file-medical fa-3x text-warning mb-3"></i>
               <h5 class="card-title">Prontuários</h5>
               <p class="card-text">Visualizar prontuários médicos</p>
-              <button class="btn btn-warning">Acessar</button>
+              <button class="btn btn-warning" disabled>
+                <i class="fas fa-clock me-1"></i>Em Breve
+              </button>
             </div>
           </div>
         </div>

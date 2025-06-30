@@ -12,6 +12,7 @@ const authenticateToken = async (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
+      console.log('Token de acesso requerido');
       return res.status(401).json({
         error: 'Token de acesso requerido',
         code: 'TOKEN_REQUIRED'
@@ -52,7 +53,7 @@ const authenticateToken = async (req, res, next) => {
           code: 'TOKEN_BLACKLISTED'
         });
       }
-      
+
       // Se o MS de autenticação estiver indisponível, usar apenas validação local
       console.warn('MS Autenticação indisponível, usando apenas validação local');
     }
