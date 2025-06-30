@@ -33,7 +33,7 @@ Browser (4200)         Express.js (3000)      ms-autenticacao (8081)
 ### Microservices
 - **ms-autenticacao** (port 8081): User authentication, employee/patient management, JWT tokens, email notifications
 - **ms-paciente** (port 8083): Patient CRUD, points/loyalty system, address management via ViaCEP
-- **ms-consulta** (port 8080): Appointment scheduling (minimal implementation)
+- **ms-consulta** (port 8085): Appointment scheduling (minimal implementation)
 
 ## Development Commands
 
@@ -41,6 +41,9 @@ Browser (4200)         Express.js (3000)      ms-autenticacao (8081)
 ```bash
 # Start complete integrated system (recommended)
 docker-compose -f docker-compose-full-stack.yml up --build
+
+# Alternative: Use the automated build script
+./start.sh                          # Builds all microservices and starts full stack
 
 # Alternative: Start backend services only
 docker-compose -f backend/docker-compose-full.yml up --build
