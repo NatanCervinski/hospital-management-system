@@ -3,6 +3,7 @@ package br.edu.ufpr.hospital.paciente.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -34,7 +35,9 @@ public class SecurityConfig {
                         .requestMatchers("POST", "/pacientes/cadastro").permitAll()
                         // Health check endpoints são públicos
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/pacientes/*/deduzir-pontos").permitAll()
                         // Todas as outras requisições exigem autenticação
+                        //
                         .anyRequest().authenticated())
                 // Configura o servidor de recursos OAuth2 para validação de JWT
                 .oauth2ResourceServer(oauth2 -> oauth2

@@ -18,8 +18,8 @@ router.put('/agendamento/confirmar', authenticateToken, requireFuncionario, Prox
 // ========== PATIENT-ONLY ROUTES (PACIENTE) ==========
 
 router.post('/consulta/:consultaId', authenticateToken, requirePaciente, ProxyService.createProxyMiddleware());
-router.put('/:agendamentoId/cancelar', authenticateToken, requirePaciente, ProxyService.createProxyMiddleware());
-router.put('/:agendamentoId/checkin', authenticateToken, requirePaciente, ProxyService.createProxyMiddleware());
+router.post('/:agendamentoId/cancelar', authenticateToken, requirePaciente, ProxyService.createProxyMiddleware());
+router.post('/:agendamentoId/checkin', authenticateToken, requirePaciente, ProxyService.createProxyMiddleware());
 router.get('/paciente', authenticateToken, requirePaciente, ProxyService.createProxyMiddleware());
 // ========== PUBLIC ROUTES (NO AUTH REQUIRED) ==========
 // Based on ConsultaController.java search endpoints without @PreAuthorize
@@ -33,6 +33,7 @@ router.get('/buscar', authenticateToken, ProxyService.createProxyMiddleware()); 
 router.get('/buscar/especialidade/:especialidade', authenticateToken, ProxyService.createProxyMiddleware()); // GET /consultas/buscar/especialidade/{especialidade} - Search by specialty (R05)
 router.get('/buscar/medico', authenticateToken, ProxyService.createProxyMiddleware()); // GET /consultas/buscar/medico?medico=name - Search by doctor (R05)
 router.get('/especialidades', authenticateToken, ProxyService.createProxyMiddleware());
+router.get('/consulta/:consultaId', authenticateToken, requireFuncionario, ProxyService.createProxyMiddleware());
 // Middleware de logging específico para consultas
 router.use((req, res, next) => {
   if (req.user) {

@@ -288,8 +288,8 @@ public class ConsultaService {
      * Cancel a booking (R06)
      * Patient cancels booking if status is CRIADO or CHECK_IN, gets points refunded
      */
-    public void cancelarAgendamento(Long agendamentoId, Integer pacienteId, String authToken) {
-        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+    public void cancelarAgendamento(String agendamentoId, Integer pacienteId, String authToken) {
+        Agendamento agendamento = agendamentoRepository.findByCodigoAgendamento(agendamentoId)
                 .orElseThrow(() -> new AgendamentoNaoEncontradoException("Agendamento não encontrado"));
 
         // Verify ownership
@@ -328,8 +328,8 @@ public class ConsultaService {
      * Perform check-in (R07)
      * Patient performs check-in within 48 hours before consultation
      */
-    public void realizarCheckin(Long agendamentoId, Integer pacienteId) {
-        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+    public void realizarCheckin(String agendamentoId, Integer pacienteId) {
+        Agendamento agendamento = agendamentoRepository.findByCodigoAgendamento(agendamentoId)
                 .orElseThrow(() -> new AgendamentoNaoEncontradoException("Agendamento não encontrado"));
 
         // Verify ownership
@@ -423,26 +423,38 @@ public class ConsultaService {
      * Extract patient ID from JWT token claims
      * Helper method for controllers to get patient ID from authentication
      */
-public static Integer extractPacienteIdFromToken(Authentication authentication) {
-    if (authentication == null || authentication.getPrincipal() == null) {
-        throw new AcessoNegadoException("Token de autenticação inválido");
-    }
-
-    if (authentication.getPrincipal() instanceof Jwt jwt) {
-        Number raw = jwt.getClaim("pacienteId");
-        if (raw == null) {
-            throw new AcessoNegadoException("ID do paciente não encontrado no token");
+    public static Integer extractPacienteIdFromToken(Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new AcessoNegadoException("Token de autenticação inválido");
         }
-        return raw.intValue(); // <- converte Long/Integer corretamente
-    }
 
-    throw new AcessoNegadoException("Formato de token inválido");
-}
+        if (authentication.getPrincipal() instanceof Jwt jwt) {
+            Number raw = jwt.getClaim("pacienteId");
+            if (raw == null) {
+                throw new AcessoNegadoException("ID do paciente não encontrado no token");
+            }
+            return raw.intValue(); // <- converte Long/Integer corretamente
+        }
+
+        throw new AcessoNegadoException("Formato de token inválido");
+    }
 
     public List<ConsultaResponseDTO> buscarEspecialidades() {
         List<Consulta> consultas = consultaRepository.findAll();
         return consultas.stream()
                 .map(ConsultaResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public List<AgendamentoResponseDTO> buscarAgendamentosPorConsultaId(Long consultaId) {
+        // 1. Busca as entidades 'Agendamento' do banco de dados usando o repositório.
+        List<Agendamento> agendamentos = agendamentoRepository.findByConsultaId(consultaId);
+
+        // 2. Converte a lista de entidades para uma lista de DTOs.
+        // Isso assume que seu AgendamentoResponseDTO tem um método estático
+        // 'fromEntity'.
+        return agendamentos.stream()
+                .map(AgendamentoResponseDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 }

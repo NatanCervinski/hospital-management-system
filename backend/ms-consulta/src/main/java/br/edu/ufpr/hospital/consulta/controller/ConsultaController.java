@@ -1,5 +1,6 @@
 package br.edu.ufpr.hospital.consulta.controller;
 
+import br.edu.ufpr.hospital.consulta.dto.AgendamentoResponseDTO;
 import br.edu.ufpr.hospital.consulta.dto.ConsultaDTO;
 import br.edu.ufpr.hospital.consulta.dto.ConsultaResponseDTO;
 import br.edu.ufpr.hospital.consulta.dto.EspecialidadeDTO;
@@ -141,4 +142,5 @@ public class ConsultaController {
         consultaService.confirmarComparecimento(codigo);
         return ResponseEntity.noContent().build();
     }
+
 }

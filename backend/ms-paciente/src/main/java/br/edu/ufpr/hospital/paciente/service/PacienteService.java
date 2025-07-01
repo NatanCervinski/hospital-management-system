@@ -163,7 +163,7 @@ public class PacienteService {
         TransacaoPonto transacao = new TransacaoPonto();
         transacao.setPaciente(updatedPaciente);
         transacao.setTipo(TipoTransacaoPonto.ENTRADA);
-        transacao.setOrigem(origem);
+        transacao.setOrigem(OrigemTransacaoPonto.COMPRA); // Ou outra origem específica se
         transacao.setQuantidadePontos(pontosAAdicionar);
         transacao.setDescricao(descricao);
         transacaoPontoRepository.save(transacao);

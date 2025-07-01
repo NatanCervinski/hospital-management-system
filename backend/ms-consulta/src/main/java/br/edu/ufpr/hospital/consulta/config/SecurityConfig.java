@@ -46,7 +46,6 @@ public class SecurityConfig {
                         .requestMatchers("/consultas/buscar/**").authenticated()
 
                         // Patient-specific endpoints - require PACIENTE role
-                        .requestMatchers("/agendamentos/**").hasRole("PACIENTE")
 
                         // Employee-specific endpoints - require FUNCIONARIO role
                         .requestMatchers("/funcionarios/**").hasRole("FUNCIONARIO")

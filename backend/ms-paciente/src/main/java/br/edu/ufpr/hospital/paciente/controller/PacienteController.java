@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.edu.ufpr.hospital.paciente.dto.AdicaoPontosDTO;
 import br.edu.ufpr.hospital.paciente.dto.CompraPontosDTO;
+import br.edu.ufpr.hospital.paciente.dto.DeducaoPontosDTO;
 import br.edu.ufpr.hospital.paciente.dto.PacienteCadastroDTO;
 import br.edu.ufpr.hospital.paciente.dto.PacienteResponseDTO;
 import br.edu.ufpr.hospital.paciente.dto.SaldoPontosDTO;
@@ -90,25 +92,23 @@ public class PacienteController {
     // diretamente ao frontend)
     // Estes seriam chamados pelo MS Consulta/Agendamento, provavelmente via API
     // Gateway/Feign Client
-    @PreAuthorize("hasAuthority('FUNCIONARIO')")
     @PutMapping("/{pacienteId}/deduzir-pontos")
     public ResponseEntity<PacienteResponseDTO> deduzirPontos(
             @PathVariable Integer pacienteId,
-            @RequestParam BigDecimal pontos,
-            @RequestParam String descricao) {
-        PacienteResponseDTO updatedPaciente = pacienteService.deduzirPontos(pacienteId, pontos, descricao);
+            @Valid @RequestBody DeducaoPontosDTO deducaoDTO) {
+        PacienteResponseDTO updatedPaciente = pacienteService.deduzirPontos(pacienteId, deducaoDTO.getPontos(),
+                deducaoDTO.getDescricao());
         return ResponseEntity.ok(updatedPaciente);
     }
 
-    @PreAuthorize("hasAuthority('FUNCIONARIO')")
-    @PutMapping("/{pacienteId}/adicionar-pontos")
-    public ResponseEntity<PacienteResponseDTO> adicionarPontos(
-            @PathVariable Integer pacienteId,
-            @RequestParam BigDecimal pontos,
-            @RequestParam String descricao,
-            @RequestParam OrigemTransacaoPonto origem) {
-        PacienteResponseDTO updatedPaciente = pacienteService.adicionarPontos(pacienteId, pontos, descricao, origem);
-        return ResponseEntity.ok(updatedPaciente);
+    @PutMapping("/{id}/adicionar-pontos")
+    public ResponseEntity<Void> adicionarPontos(
+            @PathVariable Integer id,
+            @Valid @RequestBody AdicaoPontosDTO adicaoDTO // <-- Correção
+    ) {
+        // Agora você acessa os dados através do objeto DTO
+        pacienteService.adicionarPontos(id, adicaoDTO.getPontos(), adicaoDTO.getDescricao(), adicaoDTO.getOrigem());
+        return ResponseEntity.ok().build();
     }
 
     // Endpoint para buscar detalhes de um paciente específico (para dashboard)

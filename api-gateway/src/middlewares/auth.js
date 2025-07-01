@@ -88,6 +88,7 @@ const requireFuncionario = (req, res, next) => {
   }
 
   if (req.user.tipo !== 'FUNCIONARIO') {
+    console.error(`AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcesso negado: usuário ${req.user.email} não é funcionário`);
     return res.status(403).json({
       error: 'Acesso restrito a funcionários',
       code: 'FUNCIONARIO_REQUIRED'
