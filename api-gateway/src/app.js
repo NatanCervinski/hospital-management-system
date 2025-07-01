@@ -33,7 +33,7 @@ const limiter = rateLimit({
     code: 'RATE_LIMIT_EXCEEDED'
   }
 });
-app.use(limiter);
+// app.use(limiter);
 
 // Logging
 app.use(morgan('combined'));

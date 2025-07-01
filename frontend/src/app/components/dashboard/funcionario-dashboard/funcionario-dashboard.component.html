@@ -27,8 +27,8 @@
         <div>
           <h1 class="h3 hospital-brand">Dashboard do Funcionário</h1>
           <p class="text-muted mb-0">
-            Bem-vindo(a), {{ userName }} | 
-            {{ userEmail }} | 
+            Bem-vindo(a), {{ userName }} |
+            {{ userEmail }} |
             {{ userType }}
           </p>
         </div>
@@ -49,8 +49,8 @@
                 </h5>
                 <small class="text-muted">Visualização em tempo real dos agendamentos</small>
               </div>
-              <button 
-                class="btn btn-outline-primary btn-sm" 
+              <button
+                class="btn btn-outline-primary btn-sm"
                 (click)="refreshDashboard()"
                 [disabled]="isLoadingConsultas">
                 <i class="fas fa-sync-alt me-1" [class.fa-spin]="isLoadingConsultas"></i>
@@ -58,7 +58,7 @@
               </button>
             </div>
             <div class="card-body">
-              
+
               <!-- Loading State for Consultations -->
               <div *ngIf="isLoadingConsultas" class="text-center py-4">
                 <div class="spinner-border text-primary" role="status">
@@ -94,14 +94,14 @@
               <!-- Consultations List -->
               <div *ngIf="!isLoadingConsultas && !consultasError && consultas.length > 0" class="row">
                 <div class="col-12 col-lg-6 col-xl-4 mb-3" *ngFor="let consulta of consultas; trackBy: trackByConsultaId">
-                  <div class="card h-100 consultation-card" 
+                  <div class="card h-100 consultation-card"
                        [class.border-success]="consulta.status === 'DISPONIVEL'"
                        [class.border-warning]="consulta.status === 'CANCELADA'"
                        [class.border-info]="consulta.status === 'REALIZADA'">
                     <div class="card-body">
                       <!-- Status Badge -->
                       <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="badge rounded-pill" 
+                        <span class="badge rounded-pill"
                               [class.bg-success]="consulta.status === 'DISPONIVEL'"
                               [class.bg-warning]="consulta.status === 'CANCELADA'"
                               [class.bg-info]="consulta.status === 'REALIZADA'">
@@ -136,14 +136,14 @@
                           </span>
                         </div>
                         <div class="progress" style="height: 6px;">
-                          <div class="progress-bar" 
+                          <div class="progress-bar"
                                [class.bg-success]="consulta.taxaOcupacao < 0.7"
                                [class.bg-warning]="consulta.taxaOcupacao >= 0.7 && consulta.taxaOcupacao < 0.9"
                                [class.bg-danger]="consulta.taxaOcupacao >= 0.9"
-                               role="progressbar" 
+                               role="progressbar"
                                [style.width.%]="consulta.taxaOcupacao * 100"
                                [attr.aria-valuenow]="consulta.taxaOcupacao * 100"
-                               aria-valuemin="0" 
+                               aria-valuemin="0"
                                aria-valuemax="100">
                           </div>
                         </div>
@@ -157,8 +157,8 @@
 
                       <!-- Actions -->
                       <div class="d-grid">
-                        <button 
-                          class="btn btn-outline-primary btn-sm" 
+                        <button
+                          class="btn btn-outline-primary btn-sm"
                           (click)="gerenciarConsulta(consulta)">
                           <i class="fas fa-cog me-1"></i>Gerenciar
                         </button>
@@ -174,47 +174,14 @@
 
       <!-- Quick Actions Section -->
       <div class="row">
-        <div class="col-12">
-          <h5 class="mb-3">
-            <i class="fas fa-bolt me-2 text-warning"></i>
-            Ações Rápidas
-          </h5>
-        </div>
-        
         <div class="col-md-4 mb-4">
           <div class="card card-shadow h-100">
-            <div class="card-body text-center">
-              <i class="fas fa-users fa-3x text-primary mb-3"></i>
-              <h5 class="card-title">Pacientes</h5>
-              <p class="card-text">Gerenciar cadastro de pacientes</p>
-              <button class="btn btn-hospital" routerLink="/admin/funcionarios">
-                <i class="fas fa-arrow-right me-1"></i>Acessar
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-          <div class="card card-shadow h-100">
-            <div class="card-body text-center">
+            <div class="card-body text-center" >
               <i class="fas fa-calendar-alt fa-3x text-success mb-3"></i>
               <h5 class="card-title">Consultas</h5>
               <p class="card-text">Agendar e gerenciar consultas</p>
               <button class="btn btn-success" (click)="navegarParaConsultas()">
                 <i class="fas fa-arrow-right me-1"></i>Acessar
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-          <div class="card card-shadow h-100">
-            <div class="card-body text-center">
-              <i class="fas fa-file-medical fa-3x text-warning mb-3"></i>
-              <h5 class="card-title">Prontuários</h5>
-              <p class="card-text">Visualizar prontuários médicos</p>
-              <button class="btn btn-warning" disabled>
-                <i class="fas fa-clock me-1"></i>Em Breve
               </button>
             </div>
           </div>

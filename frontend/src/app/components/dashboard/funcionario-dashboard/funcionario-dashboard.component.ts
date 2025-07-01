@@ -127,10 +127,7 @@ export class FuncionarioDashboardComponent implements OnInit, OnDestroy {
    * Handle manage consultation action
    */
   gerenciarConsulta(consulta: ConsultaResponseDTO): void {
-    // For now, just log the action - this can be expanded later
-    console.log('Gerenciando consulta:', consulta);
-    // Future implementation: navigate to consultation management page
-    // this.router.navigate(['/consultas', consulta.id]);
+    this.router.navigate(['/consultas', consulta.id]);
   }
 
   /**
