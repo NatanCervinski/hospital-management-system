@@ -100,6 +100,29 @@
           </div>
         </div>
 
+        <!-- Especialidade Field -->
+        <div class="form-group">
+          <label for="especialidade" class="form-label">
+            Especialidade Médica
+          </label>
+          <select
+            id="especialidade"
+            class="form-control"
+            [class.is-invalid]="hasFieldError('especialidade')"
+            formControlName="especialidade">
+            <option value="">Selecione (apenas para médicos)</option>
+            <option *ngFor="let esp of especialidades" [value]="esp.codigo">
+              {{ esp.nome }}
+            </option>
+          </select>
+          <div *ngIf="hasFieldError('especialidade')" class="invalid-feedback">
+            {{ getFieldErrorMessage('especialidade') }}
+          </div>
+          <small class="form-text">
+            Deixe em branco para funcionários não-médicos. Selecione uma especialidade para cadastrar como médico.
+          </small>
+        </div>
+
         <!-- Password Info (only for create mode) -->
         <div *ngIf="!isEditMode" class="password-info">
           <div class="info-box">

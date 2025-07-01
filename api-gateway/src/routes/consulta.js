@@ -24,11 +24,15 @@ router.get('/paciente', authenticateToken, requirePaciente, ProxyService.createP
 // ========== PUBLIC ROUTES (NO AUTH REQUIRED) ==========
 // Based on ConsultaController.java search endpoints without @PreAuthorize
 
+// Medical specialties endpoint - public access for form dropdowns
+router.get('/especialidades', ProxyService.createProxyMiddleware()); // GET /especialidades - Get all medical specialties (public)
+router.get('/especialidades/:codigo', ProxyService.createProxyMiddleware()); // GET /especialidades/{codigo} - Get specialty by code (public)
+
 // Consultation search endpoints - accessible by both patients and employees
 router.get('/buscar', authenticateToken, ProxyService.createProxyMiddleware()); // GET /consultas/buscar - Search available consultations (R05)
 router.get('/buscar/especialidade/:especialidade', authenticateToken, ProxyService.createProxyMiddleware()); // GET /consultas/buscar/especialidade/{especialidade} - Search by specialty (R05)
 router.get('/buscar/medico', authenticateToken, ProxyService.createProxyMiddleware()); // GET /consultas/buscar/medico?medico=name - Search by doctor (R05)
-
+router.get('/especialidades', authenticateToken, ProxyService.createProxyMiddleware());
 // Middleware de logging específico para consultas
 router.use((req, res, next) => {
   if (req.user) {

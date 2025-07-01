@@ -1,7 +1,10 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { FuncionarioService } from '../../services/funcionario.service';
+import { FuncionarioOpsService, FuncionarioOpsDTO } from '../../services/funcionario-ops.service';
+import { AuthService, FuncionarioRegistrationRequest } from '../../services/auth.service';
 import { CpfValidatorService } from '../../services/cpf-validator.service';
 import { ViacepService } from '../../services/viacep.service';
 import { 
@@ -28,9 +31,28 @@ export class FuncionarioModalComponent {
 
   funcionarioForm: FormGroup;
 
+  // Medical specialties for doctors (from requirements)
+  especialidades = [
+    { codigo: 'CARD', nome: 'Cardiologia' },
+    { codigo: 'DERM', nome: 'Dermatologia' },
+    { codigo: 'ENDO', nome: 'Endocrinologia' },
+    { codigo: 'GAST', nome: 'Gastroenterologia' },
+    { codigo: 'GINE', nome: 'Ginecologia' },
+    { codigo: 'NEUR', nome: 'Neurologia' },
+    { codigo: 'OFTA', nome: 'Oftalmologia' },
+    { codigo: 'ORTO', nome: 'Ortopedia' },
+    { codigo: 'OTOR', nome: 'Otorrinolaringologia' },
+    { codigo: 'PED', nome: 'Pediatria' },
+    { codigo: 'PNEU', nome: 'Pneumologia' },
+    { codigo: 'PSIQ', nome: 'Psiquiatria' },
+    { codigo: 'URO', nome: 'Urologia' }
+  ];
+
   constructor(
     private fb: FormBuilder,
     private funcionarioService: FuncionarioService,
+    private funcionarioOpsService: FuncionarioOpsService,
+    private authService: AuthService,
     private cpfValidator: CpfValidatorService,
     private viacepService: ViacepService
   ) {
@@ -45,7 +67,8 @@ export class FuncionarioModalComponent {
       nome: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
       cpf: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email, Validators.maxLength(150)]],
-      telefone: ['', [Validators.required, Validators.maxLength(15)]]
+      telefone: ['', [Validators.required, Validators.maxLength(15)]],
+      especialidade: ['', [Validators.maxLength(50)]] // Optional field for doctors
     });
   }
 
@@ -64,7 +87,8 @@ export class FuncionarioModalComponent {
       this.funcionarioForm.patchValue({
         nome: funcionario.nome,
         email: funcionario.email,
-        telefone: funcionario.telefone
+        telefone: funcionario.telefone,
+        especialidade: funcionario.especialidade || ''
       });
       // Remove CPF field for editing
       this.funcionarioForm.get('cpf')?.clearValidators();
@@ -109,7 +133,9 @@ export class FuncionarioModalComponent {
   }
 
   /**
-   * Creates a new employee
+   * Creates a new employee using the dual-record pattern
+   * Step 1: Create authentication record in ms-autenticacao
+   * Step 2: Create operational record in ms-consulta
    */
   private createFuncionario() {
     const formValue = this.funcionarioForm.value;
@@ -121,25 +147,68 @@ export class FuncionarioModalComponent {
       return;
     }
 
-    const funcionarioData: FuncionarioCadastroDTO = {
+    // Prepare data for authentication record (ms-autenticacao)
+    const authData: FuncionarioRegistrationRequest = {
       nome: formValue.nome.trim(),
       cpf: this.cpfValidator.cleanCpf(formValue.cpf),
       email: formValue.email.trim().toLowerCase(),
       telefone: formValue.telefone.replace(/[^\d]/g, '')
     };
 
-    this.funcionarioService.createFuncionario(funcionarioData).subscribe({
-      next: () => {
-        this.loading = false;
-        this.funcionarioSaved.emit();
-        this.closeModal();
+    // Prepare data for operational record (ms-consulta)
+    const opsData: FuncionarioOpsDTO = {
+      nome: formValue.nome.trim(),
+      cpf: this.cpfValidator.cleanCpf(formValue.cpf),
+      email: formValue.email.trim().toLowerCase(),
+      telefone: formValue.telefone.replace(/[^\d]/g, ''),
+      especialidade: formValue.especialidade?.trim() || undefined
+    };
+
+    // Step 1: Create authentication record
+    this.authService.registerFuncionario(authData).subscribe({
+      next: (authResponse) => {
+        console.log('Authentication record created successfully:', authResponse);
+        
+        // Step 2: Create operational record
+        this.funcionarioOpsService.createOperationalEmployee(opsData).subscribe({
+          next: (opsResponse) => {
+            console.log('Operational record created successfully:', opsResponse);
+            this.loading = false;
+            this.funcionarioSaved.emit();
+            this.closeModal();
+          },
+          error: (opsError) => {
+            console.error('Error creating operational record:', opsError);
+            this.loading = false;
+            this.error = `Usuário criado com sucesso, mas houve erro no registro operacional: ${this.funcionarioOpsService.getErrorMessage(opsError)}. Contate o administrador.`;
+          }
+        });
       },
-      error: (error) => {
+      error: (authError) => {
+        console.error('Error creating authentication record:', authError);
         this.loading = false;
-        this.error = this.funcionarioService.getErrorMessage(error);
-        console.error('Error creating funcionario:', error);
+        this.error = `Erro na criação do usuário: ${this.getAuthErrorMessage(authError)}`;
       }
     });
+  }
+
+  /**
+   * Gets error message for authentication service errors
+   */
+  private getAuthErrorMessage(error: any): string {
+    if (error.status === 409) {
+      return error.error?.message || 'Email ou CPF já cadastrado no sistema';
+    }
+    if (error.status === 400) {
+      return error.error?.message || 'Dados inválidos. Verifique os campos e tente novamente';
+    }
+    if (error.status === 500) {
+      return 'Sistema de autenticação temporariamente indisponível. Tente novamente em alguns minutos';
+    }
+    if (error.status === 0) {
+      return 'Falha na conexão. Verifique sua internet e tente novamente';
+    }
+    return error.error?.message || 'Erro inesperado na criação do usuário. Tente novamente';
   }
 
   /**
@@ -152,7 +221,8 @@ export class FuncionarioModalComponent {
     const funcionarioData: FuncionarioUpdateDTO = {
       nome: formValue.nome.trim(),
       email: formValue.email.trim().toLowerCase(),
-      telefone: formValue.telefone.replace(/[^\d]/g, '')
+      telefone: formValue.telefone.replace(/[^\d]/g, ''),
+      especialidade: formValue.especialidade?.trim() || undefined
     };
 
     this.funcionarioService.updateFuncionario(this.currentFuncionarioId, funcionarioData).subscribe({
@@ -212,7 +282,8 @@ export class FuncionarioModalComponent {
       'nome': 'Nome',
       'cpf': 'CPF',
       'email': 'Email',
-      'telefone': 'Telefone'
+      'telefone': 'Telefone',
+      'especialidade': 'Especialidade'
     };
     return labels[fieldName] || fieldName;
   }

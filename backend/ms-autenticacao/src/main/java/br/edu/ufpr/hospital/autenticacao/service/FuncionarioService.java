@@ -327,6 +327,7 @@ public class FuncionarioService {
     funcionario.setSalt(salt);
     funcionario.setTelefone(dto.getTelefone());
     funcionario.setMatricula(dto.getMatricula());
+    funcionario.setEspecialidade(dto.getEspecialidade()); // Medical specialty for doctors
 
     // Endereço (se fornecido)
     if (dto.getCep() != null && !dto.getCep().isEmpty()) {
@@ -370,6 +371,11 @@ public class FuncionarioService {
       alterou = true;
     }
 
+    if (dto.getEspecialidade() != null && !dto.getEspecialidade().equals(funcionario.getEspecialidade())) {
+      funcionario.setEspecialidade(dto.getEspecialidade());
+      alterou = true;
+    }
+
     // Atualizar endereço se algum campo foi fornecido
     if (dto.getCep() != null || dto.getRua() != null || dto.getCidade() != null ||
         dto.getEstado() != null || dto.getBairro() != null) {
@@ -402,6 +408,7 @@ public class FuncionarioService {
         .email(funcionario.getEmail())
         .telefone(funcionario.getTelefone())
         .matricula(funcionario.getMatricula())
+        .especialidade(funcionario.getEspecialidade())
         .ativo(funcionario.getAtivo())
         .dataCadastro(funcionario.getDataCadastro())
         .ultimoAcesso(funcionario.getUltimoAcesso())
@@ -428,11 +435,36 @@ public class FuncionarioService {
         .telefone(funcionario.getTelefone())
         .cpf(formatarCpf(funcionario.getCpf()))
         .matricula(funcionario.getMatricula())
+        .especialidade(funcionario.getEspecialidade())
         .ativo(funcionario.getAtivo())
         .dataCadastro(funcionario.getDataCadastro())
         .cidade(funcionario.getEndereco() != null ? funcionario.getEndereco().getCidade() : null)
         .estado(funcionario.getEndereco() != null ? funcionario.getEndereco().getEstado() : null)
         .build();
+  }
+
+  /**
+   * Lista todos os médicos ativos (funcionários com especialidade)
+   * Usado pela funcionalidade de criação de consultas
+   */
+  public List<FuncionarioListDTO> listarFuncionariosAtivos() {
+    log.info("Buscando médicos ativos para seleção");
+
+    try {
+      // Buscar funcionários ativos usando método existente
+      List<UsuarioModel> allUsers = usuarioRepository.findByAtivoOrderByNome(true);
+
+      return allUsers.stream()
+          .filter(usuario -> usuario instanceof FuncionarioModel)
+          .map(usuario -> (FuncionarioModel) usuario)
+          .filter(funcionario -> funcionario.isMedico()) // Only doctors (employees with specialty)
+          .map(funcionario -> converterParaListDTO(funcionario))
+          .collect(Collectors.toList());
+
+    } catch (Exception e) {
+      log.error("Erro ao buscar médicos ativos: {}", e.getMessage(), e);
+      throw new RuntimeException("Erro ao buscar médicos ativos: " + e.getMessage());
+    }
   }
 
   /**

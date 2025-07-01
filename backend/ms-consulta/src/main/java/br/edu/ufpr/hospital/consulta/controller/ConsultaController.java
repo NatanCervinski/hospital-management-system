@@ -2,6 +2,7 @@ package br.edu.ufpr.hospital.consulta.controller;
 
 import br.edu.ufpr.hospital.consulta.dto.ConsultaDTO;
 import br.edu.ufpr.hospital.consulta.dto.ConsultaResponseDTO;
+import br.edu.ufpr.hospital.consulta.dto.EspecialidadeDTO;
 import br.edu.ufpr.hospital.consulta.service.ConsultaService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -49,10 +50,10 @@ public class ConsultaController {
      * Accessible by both patients and employees
      */
     @GetMapping("/buscar")
-    public ResponseEntity<List<ConsultaResponseDTO>> buscarConsultasDisponiveis() {
+    public ResponseEntity<List<ConsultaResponseDTO>> buscarTodasConsultas() {
 
         log.info("Searching for available consultations");
-        List<ConsultaResponseDTO> consultas = consultaService.buscarConsultasDisponiveis();
+        List<ConsultaResponseDTO> consultas = consultaService.buscarTodasConsultas();
         return ResponseEntity.ok(consultas);
     }
 
@@ -65,6 +66,19 @@ public class ConsultaController {
             @PathVariable String especialidade) {
         List<ConsultaResponseDTO> consultas = consultaService.buscarPorEspecialidade(especialidade);
         return ResponseEntity.ok(consultas);
+    }
+
+    @GetMapping("/especialidades")
+    public ResponseEntity<List<EspecialidadeDTO>> listarEspecialidades() {
+        // A lógica para buscar do banco de dados ficaria em um service.
+        // Para o escopo do projeto, retornar uma lista fixa atende aos requisitos.
+        List<EspecialidadeDTO> especialidades = List.of(
+                new EspecialidadeDTO("CARD", "Cardiologia"),
+                new EspecialidadeDTO("DERM", "Dermatologia"),
+                new EspecialidadeDTO("PEDI", "Pediatria"),
+                new EspecialidadeDTO("GINE", "Ginecologia"),
+                new EspecialidadeDTO("ORTO", "Ortopedia"));
+        return ResponseEntity.ok(especialidades);
     }
 
     /**

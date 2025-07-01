@@ -18,6 +18,23 @@ export class FuncionarioPageComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
+  // Medical specialties mapping
+  private especialidades = {
+    'CARD': 'Cardiologia',
+    'DERM': 'Dermatologia', 
+    'ENDO': 'Endocrinologia',
+    'GAST': 'Gastroenterologia',
+    'GINE': 'Ginecologia',
+    'NEUR': 'Neurologia',
+    'OFTA': 'Oftalmologia',
+    'ORTO': 'Ortopedia',
+    'OTOR': 'Otorrinolaringologia',
+    'PED': 'Pediatria',
+    'PNEU': 'Pneumologia',
+    'PSIQ': 'Psiquiatria',
+    'URO': 'Urologia'
+  };
+
   constructor(private funcionarioService: FuncionarioService) { }
 
   ngOnInit() {
@@ -99,5 +116,12 @@ export class FuncionarioPageComponent implements OnInit {
    */
   getStatusText(status: boolean): string {
     return status ? 'Ativo' : 'Inativo';
+  }
+
+  /**
+   * Gets the specialty name from code
+   */
+  getEspecialidadeNome(codigo: string): string {
+    return this.especialidades[codigo as keyof typeof this.especialidades] || codigo;
   }
 }

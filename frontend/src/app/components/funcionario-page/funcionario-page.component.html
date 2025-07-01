@@ -49,6 +49,7 @@
             <th>Nome</th>
             <th>Email</th>
             <th>Telefone</th>
+            <th>Especialidade</th>
             <th>Status</th>
             <th class="actions-column">Ações</th>
           </tr>
@@ -63,6 +64,16 @@
             </td>
             <td>{{ funcionario.email }}</td>
             <td>{{ funcionario.telefone }}</td>
+            <td>
+              <span *ngIf="funcionario.especialidade" class="specialty-badge">
+                <i class="fas fa-user-md"></i>
+                {{ getEspecialidadeNome(funcionario.especialidade) }}
+              </span>
+              <span *ngIf="!funcionario.especialidade" class="text-muted">
+                <i class="fas fa-user"></i>
+                Funcionário
+              </span>
+            </td>
             <td>
               <span class="status-badge" [ngClass]="getStatusClass(funcionario.ativo)">
                 {{ getStatusText(funcionario.ativo) }}

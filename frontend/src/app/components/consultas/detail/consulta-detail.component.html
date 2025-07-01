@@ -1,0 +1,266 @@
+<div class="container mt-4">
+  <!-- Header with navigation -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+      <i class="fas fa-stethoscope me-2"></i>
+      Detalhes da Consulta
+    </h2>
+    <button class="btn btn-outline-secondary" (click)="goBack()">
+      <i class="fas fa-arrow-left me-2"></i>
+      Voltar para a Lista
+    </button>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Carregando...</span>
+    </div>
+    <p class="mt-2">Carregando dados da consulta...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    {{ error }}
+    <button class="btn btn-sm btn-outline-danger ms-2" (click)="refresh()">
+      <i class="fas fa-refresh me-1"></i>Tentar novamente
+    </button>
+  </div>
+
+  <!-- Consultation details -->
+  <div *ngIf="!loading && !error && consulta" class="row">
+    <!-- Consultation Summary Card -->
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-info-circle me-2"></i>
+            Informações da Consulta
+          </h5>
+        </div>
+        <div class="card-body">
+          <dl class="row">
+            <dt class="col-sm-4">Código:</dt>
+            <dd class="col-sm-8">
+              <code>{{ consulta.codigo }}</code>
+            </dd>
+
+            <dt class="col-sm-4">Data/Hora:</dt>
+            <dd class="col-sm-8">{{ formatDateTime(consulta.dataHora) }}</dd>
+
+            <dt class="col-sm-4">Especialidade:</dt>
+            <dd class="col-sm-8">{{ consulta.especialidade }}</dd>
+
+            <dt class="col-sm-4">Médico:</dt>
+            <dd class="col-sm-8">{{ consulta.medico }}</dd>
+
+            <dt class="col-sm-4">Valor:</dt>
+            <dd class="col-sm-8">{{ formatCurrency(consulta.valor) }}</dd>
+
+            <dt class="col-sm-4">Vagas:</dt>
+            <dd class="col-sm-8">
+              {{ consulta.vagasOcupadas }}/{{ consulta.vagas }}
+              <small class="text-muted">({{ consulta.vagasDisponiveis }} disponíveis)</small>
+            </dd>
+
+            <dt class="col-sm-4">Taxa de Ocupação:</dt>
+            <dd class="col-sm-8">
+              <div class="progress" style="height: 20px;">
+                <div 
+                  class="progress-bar" 
+                  [class.bg-success]="consulta.taxaOcupacao < 0.5"
+                  [class.bg-warning]="consulta.taxaOcupacao >= 0.5 && consulta.taxaOcupacao < 0.8"
+                  [class.bg-danger]="consulta.taxaOcupacao >= 0.8"
+                  [style.width.%]="consulta.taxaOcupacao * 100"
+                >
+                  {{ formatTaxaOcupacao(consulta.taxaOcupacao) }}
+                </div>
+              </div>
+            </dd>
+
+            <dt class="col-sm-4">Status:</dt>
+            <dd class="col-sm-8">
+              <span class="badge" [ngClass]="getStatusBadgeClass(consulta.status)">
+                {{ consulta.status }}
+              </span>
+            </dd>
+
+            <dt class="col-sm-4">Criado em:</dt>
+            <dd class="col-sm-8">{{ formatDateTime(consulta.dataCriacao) }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <!-- Management Actions Card -->
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-cogs me-2"></i>
+            Ações de Gerenciamento
+          </h5>
+        </div>
+        <div class="card-body">
+          <!-- Confirm Attendance Section -->
+          <div class="mb-4">
+            <h6><i class="fas fa-check-circle me-2"></i>Confirmar Comparecimento (R09)</h6>
+            <form [formGroup]="confirmAttendanceForm" (ngSubmit)="confirmarComparecimento()">
+              <div class="input-group mb-2">
+                <input
+                  type="text"
+                  class="form-control"
+                  [class.is-invalid]="hasError('codigo')"
+                  formControlName="codigo"
+                  placeholder="Digite o código do agendamento (ex: AGD1234567890)"
+                >
+                <button 
+                  type="submit" 
+                  class="btn btn-success"
+                  [disabled]="actionLoading || confirmAttendanceForm.invalid"
+                >
+                  <span *ngIf="actionLoading" class="spinner-border spinner-border-sm me-2"></span>
+                  <i *ngIf="!actionLoading" class="fas fa-check me-1"></i>
+                  Confirmar
+                </button>
+              </div>
+              <div *ngIf="hasError('codigo')" class="text-danger small">
+                {{ getErrorMessage('codigo') }}
+              </div>
+            </form>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-grid gap-2">
+            <!-- Cancel Consultation -->
+            <button 
+              type="button" 
+              class="btn btn-danger"
+              [disabled]="!canCancelConsulta() || actionLoading"
+              (click)="showCancelConfirmation()"
+            >
+              <i class="fas fa-times me-2"></i>
+              Cancelar Consulta (R10)
+            </button>
+            <small class="text-muted" *ngIf="!canCancelConsulta()">
+              <i class="fas fa-info-circle me-1"></i>
+              Consulta não pode ser cancelada (ocupação ≥ 50% ou já finalizada)
+            </small>
+
+            <!-- Finalize Consultation -->
+            <button 
+              type="button" 
+              class="btn btn-secondary"
+              [disabled]="!canFinalizeConsulta() || actionLoading"
+              (click)="showFinalizeConfirmation()"
+            >
+              <i class="fas fa-flag-checkered me-2"></i>
+              Finalizar Consulta (R11)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patient Bookings Table -->
+  <div *ngIf="!loading && !error && consulta" class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">
+        <i class="fas fa-users me-2"></i>
+        Pacientes Agendados
+        <span class="badge bg-primary ms-2">{{ agendamentos.length }}</span>
+      </h5>
+    </div>
+    <div class="card-body">
+      <div *ngIf="agendamentos.length === 0" class="text-center py-4">
+        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+        <p class="text-muted">Nenhum paciente agendado para esta consulta.</p>
+      </div>
+
+      <div *ngIf="agendamentos.length > 0" class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Paciente ID</th>
+              <th>Data Agendamento</th>
+              <th>Pontos Usados</th>
+              <th>Valor Pago</th>
+              <th>Status</th>
+              <th>Check-in</th>
+              <th>Confirmação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let agendamento of agendamentos">
+              <td>
+                <code>{{ agendamento.codigoAgendamento }}</code>
+              </td>
+              <td>{{ agendamento.pacienteId }}</td>
+              <td>{{ formatDateTime(agendamento.dataAgendamento) }}</td>
+              <td>{{ agendamento.pontosUsados }} pts</td>
+              <td>{{ formatCurrency(agendamento.valorPago) }}</td>
+              <td>
+                <span class="badge" [ngClass]="getBookingStatusBadgeClass(agendamento.status)">
+                  {{ agendamento.status }}
+                </span>
+              </td>
+              <td>
+                <span *ngIf="agendamento.dataCheckin">
+                  {{ formatDateTime(agendamento.dataCheckin) }}
+                </span>
+                <span *ngIf="!agendamento.dataCheckin" class="text-muted">-</span>
+              </td>
+              <td>
+                <span *ngIf="agendamento.dataConfirmacao">
+                  {{ formatDateTime(agendamento.dataConfirmacao) }}
+                </span>
+                <span *ngIf="!agendamento.dataConfirmacao" class="text-muted">-</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" [class.show]="showConfirmModal" [style.display]="showConfirmModal ? 'block' : 'none'" 
+     tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          {{ getConfirmModalTitle() }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeConfirmModal()"></button>
+      </div>
+      <div class="modal-body">
+        <p>{{ getConfirmModalMessage() }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeConfirmModal()">
+          Cancelar
+        </button>
+        <button 
+          type="button" 
+          class="btn"
+          [class.btn-danger]="confirmAction === 'cancel'"
+          [class.btn-primary]="confirmAction === 'finalize'"
+          [disabled]="actionLoading"
+          (click)="executeConfirmedAction()"
+        >
+          <span *ngIf="actionLoading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ confirmAction === 'cancel' ? 'Confirmar Cancelamento' : 'Confirmar Finalização' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal backdrop -->
+<div *ngIf="showConfirmModal" class="modal-backdrop fade show" (click)="closeConfirmModal()"></div>

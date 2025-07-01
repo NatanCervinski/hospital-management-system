@@ -19,6 +19,7 @@ public class FuncionarioResponseDTO {
   private String email;
   private String telefone;
   private String matricula;
+  private String especialidade; // Medical specialty for doctors
   private Boolean ativo;
   private LocalDateTime dataCadastro;
   private LocalDateTime ultimoAcesso;

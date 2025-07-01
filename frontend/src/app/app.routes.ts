@@ -1,4 +1,3 @@
-import { ConsultaCadastroComponent } from './components/consultas/cadastro/consulta-cadastro.component';
 import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
 import { PatientRegistrationComponent } from './components/patient-registration/patient-registration.component';
@@ -8,6 +7,7 @@ import { AdminLayoutComponent } from './components/admin-layout/admin-layout.com
 import { FuncionarioPageComponent } from './components/funcionario-page/funcionario-page.component';
 import { authGuard, loginGuard } from './guards/auth.guard';
 import { ConsultaListComponent } from './components/consultas/list/consulta-list.component';
+import { ConsultaDetailComponent } from './components/consultas/detail/consulta-detail.component';
 
 export const routes: Routes = [
   {
@@ -66,8 +66,8 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'consultas/cadastrar',
-    component: ConsultaCadastroComponent,
+    path: 'consultas/:id',
+    component: ConsultaDetailComponent,
     canActivate: [authGuard]
   },
 

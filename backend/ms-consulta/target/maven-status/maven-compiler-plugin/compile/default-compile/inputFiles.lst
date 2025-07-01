@@ -3,6 +3,8 @@
 /app/src/main/java/br/edu/ufpr/hospital/consulta/config/WebClientConfig.java
 /app/src/main/java/br/edu/ufpr/hospital/consulta/controller/AgendamentoController.java
 /app/src/main/java/br/edu/ufpr/hospital/consulta/controller/ConsultaController.java
+/app/src/main/java/br/edu/ufpr/hospital/consulta/controller/EspecialidadeController.java
+/app/src/main/java/br/edu/ufpr/hospital/consulta/controller/FuncionarioController.java
 /app/src/main/java/br/edu/ufpr/hospital/consulta/controller/HealthCheckController.java
 /app/src/main/java/br/edu/ufpr/hospital/consulta/dto/AdicaoPontosDTO.java
 /app/src/main/java/br/edu/ufpr/hospital/consulta/dto/AgendamentoDTO.java
@@ -10,6 +12,7 @@
 /app/src/main/java/br/edu/ufpr/hospital/consulta/dto/ConsultaDTO.java
 /app/src/main/java/br/edu/ufpr/hospital/consulta/dto/ConsultaResponseDTO.java
 /app/src/main/java/br/edu/ufpr/hospital/consulta/dto/DeducaoPontosDTO.java
+/app/src/main/java/br/edu/ufpr/hospital/consulta/dto/EspecialidadeDTO.java
 /app/src/main/java/br/edu/ufpr/hospital/consulta/dto/FuncionarioDTO.java
 /app/src/main/java/br/edu/ufpr/hospital/consulta/dto/FuncionarioResponseDTO.java
 /app/src/main/java/br/edu/ufpr/hospital/consulta/dto/FuncionarioUpdateDTO.java
@@ -33,5 +36,6 @@
 /app/src/main/java/br/edu/ufpr/hospital/consulta/repository/ConsultaRepository.java
 /app/src/main/java/br/edu/ufpr/hospital/consulta/repository/FuncionarioRepository.java
 /app/src/main/java/br/edu/ufpr/hospital/consulta/service/ConsultaService.java
+/app/src/main/java/br/edu/ufpr/hospital/consulta/service/EspecialidadeService.java
 /app/src/main/java/br/edu/ufpr/hospital/consulta/service/FuncionarioService.java
 /app/src/main/java/br/edu/ufpr/hospital/consulta/service/PacienteIntegrationService.java
