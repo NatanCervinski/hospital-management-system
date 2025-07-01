@@ -89,12 +89,20 @@
                   Editar
                 </button>
                 <button
-                  *ngIf="funcionario.status === 'ATIVO'"
+                  *ngIf="funcionario.ativo"
                   class="btn btn-sm btn-outline-danger"
-                  (click)="deactivateFuncionario(funcionario)"
+                  (click)="toggleFuncionarioStatus(funcionario)"
                   title="Inativar funcionário">
                   <i class="fas fa-ban"></i>
                   Inativar
+                </button>
+                <button
+                  *ngIf="!funcionario.ativo"
+                  class="btn btn-sm btn-outline-success"
+                  (click)="toggleFuncionarioStatus(funcionario)"
+                  title="Ativar funcionário">
+                  <i class="fas fa-check"></i>
+                  Ativar
                 </button>
               </div>
             </td>

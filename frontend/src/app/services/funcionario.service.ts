@@ -98,6 +98,23 @@ export class FuncionarioService {
   }
 
   /**
+   * Toggles employee active/inactive status
+   * @param id Employee ID
+   * @returns Observable with updated employee data
+   */
+  toggleFuncionarioStatus(id: number): Observable<FuncionarioResponseDTO> {
+    this.loadingSubject.next(true);
+
+    return this.http.patch<FuncionarioResponseDTO>(`${this.API_BASE_URL}/${id}/toggle-status`, {})
+      .pipe(
+        tap(() => this.loadingSubject.next(false)),
+        tap({
+          error: () => this.loadingSubject.next(false)
+        })
+      );
+  }
+
+  /**
    * Gets list of active doctors for consultation form dropdown
    * @returns Observable with array of active doctors
    */
