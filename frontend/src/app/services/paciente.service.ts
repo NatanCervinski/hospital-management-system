@@ -78,4 +78,8 @@ export class PacienteService {
   fazerCheckin(agendamentoId: string): Observable<any> {
     return this.http.post(`${this.API_BASE_URL}/agendamentos/${agendamentoId}/checkin`, {});
   }
+
+  getSaldoEHistorico(pacienteId: string): Observable<any> {
+    return this.http.get(`${this.API_BASE_URL}/pacientes/${pacienteId}/saldo-e-historico`);
+  }
 }

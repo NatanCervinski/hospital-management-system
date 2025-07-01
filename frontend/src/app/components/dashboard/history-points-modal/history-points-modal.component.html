@@ -1,0 +1,64 @@
+<!-- History Points Modal -->
+<div class="modal fade" id="historyPointsModal" tabindex="-1" aria-labelledby="historyPointsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title hospital-brand" id="historyPointsModalLabel">
+          <i class="fas fa-history me-2"></i>Histórico de Pontos
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Loading Spinner -->
+        <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
+        </div>
+
+        <!-- Table of Transactions -->
+        <div *ngIf="!isLoading && historico.length > 0" class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Data</th>
+                <th>Tipo</th>
+                <th>Origem</th>
+                <th>Valor (R$)</th>
+                <th>Pontos</th>
+                <th>Descrição</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let transacao of historico">
+                <td>{{ transacao.dataHora | date:'dd/MM/yyyy' }}</td>
+                <td>{{ transacao.tipo }}</td>
+                <td>{{ transacao.origem }}</td>
+                <td>{{ transacao.valorReais | currency:'BRL':'symbol':'1.2-2':'pt'}}</td>
+                <td>{{ transacao.quantidadePontos }}</td>
+                <td>{{ transacao.descricao }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- No Records -->
+        <div *ngIf="!isLoading && historico.length === 0" class="text-center py-3 text-muted">
+          <i class="fas fa-info-circle me-2"></i>Nenhuma transação encontrada.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-2"></i>Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

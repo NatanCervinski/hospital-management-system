@@ -6,10 +6,11 @@ import { PacienteDetalhes, Agendamento } from '../../../interfaces/paciente.inte
 import { BuyPointsModalComponent } from '../buy-points-modal/buy-points-modal.component';
 import { Subscription, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import { HistoryPointsModalComponent } from '../history-points-modal/history-points-modal.component';
 
 @Component({
   selector: 'app-paciente-dashboard',
-  imports: [CommonModule, BuyPointsModalComponent],
+  imports: [CommonModule, BuyPointsModalComponent, HistoryPointsModalComponent],
   templateUrl: './paciente-dashboard.component.html',
   styleUrl: './paciente-dashboard.component.scss'
 })

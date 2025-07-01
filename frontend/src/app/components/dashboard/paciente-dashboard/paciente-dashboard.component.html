@@ -46,8 +46,11 @@
               <i class="fas fa-coins fa-3x text-warning mb-3"></i>
               <h5 class="card-title">Meus Pontos</h5>
               <h2 class="text-warning">{{ pacienteDetalhes?.saldoPontos || 0 }}</h2>
-              <button class="btn btn-warning btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#buyPointsModal">
+              <button class="btn btn-warning btn-sm mt-2 me-2" data-bs-toggle="modal" data-bs-target="#buyPointsModal">
                 <i class="fas fa-plus me-1"></i>Comprar Pontos
+              </button>
+              <button class="btn btn-warning btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#historyPointsModal">
+                <i class="fas fa-clock-rotate-left me-1"></i>Histórico
               </button>
             </div>
           </div>
@@ -148,24 +151,13 @@
 
       <!-- Quick Actions -->
       <div class="row mt-4">
-        <div class="col-md-6 mb-4">
+        <div class="col-md-12 mb-4">
           <div class="card card-shadow h-100">
             <div class="card-body text-center">
               <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
               <h5 class="card-title">Agendar Consulta</h5>
               <p class="card-text">Agendar uma nova consulta</p>
               <button class="btn btn-hospital">Agendar</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6 mb-4">
-          <div class="card card-shadow h-100">
-            <div class="card-body text-center">
-              <i class="fas fa-user-edit fa-3x text-warning mb-3"></i>
-              <h5 class="card-title">Meus Dados</h5>
-              <p class="card-text">Atualizar informações pessoais</p>
-              <button class="btn btn-warning">Editar Dados</button>
             </div>
           </div>
         </div>
@@ -176,3 +168,6 @@
 
 <!-- Buy Points Modal -->
 <app-buy-points-modal (purchaseSuccess)="onPurchaseSuccess()"></app-buy-points-modal>
+<!--History Points Modal-->>
+<app-history-points-modal></app-history-points-modal>
+

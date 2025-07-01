@@ -1,37 +1,37 @@
-/app/src/main/java/br/edu/ufpr/hospital/consulta/MsConsultaApplication.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/config/SecurityConfig.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/config/WebClientConfig.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/controller/AgendamentoController.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/controller/ConsultaController.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/controller/HealthCheckController.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/dto/AdicaoPontosDTO.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/dto/AgendamentoDTO.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/dto/AgendamentoResponseDTO.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/dto/ConsultaDTO.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/dto/ConsultaResponseDTO.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/dto/DeducaoPontosDTO.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/dto/FuncionarioDTO.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/dto/FuncionarioResponseDTO.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/dto/FuncionarioUpdateDTO.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/dto/SaldoPontosDTO.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/exception/AcessoNegadoException.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/exception/AgendamentoNaoEncontradoException.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/exception/CancelamentoInvalidoException.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/exception/CheckinInvalidoException.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/exception/ConfirmacaoInvalidaException.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/exception/ConsultaIndisponivelException.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/exception/ConsultaNaoEncontradaException.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/exception/GlobalExceptionHandler.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/exception/SaldoInsuficienteException.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/model/Agendamento.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/model/Consulta.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/model/Funcionario.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/model/StatusAgendamento.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/model/StatusConsulta.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/model/StatusFuncionario.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/repository/AgendamentoRepository.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/repository/ConsultaRepository.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/repository/FuncionarioRepository.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/service/ConsultaService.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/service/FuncionarioService.java
-/app/src/main/java/br/edu/ufpr/hospital/consulta/service/PacienteIntegrationService.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\config\SecurityConfig.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\config\WebClientConfig.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\controller\AgendamentoController.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\controller\ConsultaController.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\controller\HealthCheckController.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\dto\AdicaoPontosDTO.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\dto\AgendamentoDTO.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\dto\AgendamentoResponseDTO.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\dto\ConsultaDTO.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\dto\ConsultaResponseDTO.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\dto\DeducaoPontosDTO.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\dto\FuncionarioDTO.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\dto\FuncionarioResponseDTO.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\dto\FuncionarioUpdateDTO.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\dto\SaldoPontosDTO.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\exception\AcessoNegadoException.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\exception\AgendamentoNaoEncontradoException.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\exception\CancelamentoInvalidoException.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\exception\CheckinInvalidoException.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\exception\ConfirmacaoInvalidaException.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\exception\ConsultaIndisponivelException.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\exception\ConsultaNaoEncontradaException.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\exception\GlobalExceptionHandler.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\exception\SaldoInsuficienteException.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\model\Agendamento.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\model\Consulta.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\model\Funcionario.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\model\StatusAgendamento.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\model\StatusConsulta.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\model\StatusFuncionario.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\MsConsultaApplication.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\repository\AgendamentoRepository.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\repository\ConsultaRepository.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\repository\FuncionarioRepository.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\service\ConsultaService.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\service\FuncionarioService.java
+C:\Users\Luiz\OneDrive\Área de Trabalho\DAC\Nova Main\hospital-management-system\backend\ms-consulta\src\main\java\br\edu\ufpr\hospital\consulta\service\PacienteIntegrationService.java

@@ -29,24 +29,19 @@ export class BuyPointsModalComponent implements OnInit, OnDestroy {
       quantidadePontos: new FormControl(1, [
         Validators.required,
         Validators.min(1),
-        Validators.max(1000) // Set reasonable maximum
+        Validators.max(1000)
       ])
     });
   }
 
   ngOnInit(): void {
-    // Subscribe to form value changes to calculate cost in real-time
     this.subscription.add(
       this.buyPointsForm.get('quantidadePontos')!.valueChanges.subscribe(quantidade => {
-        if (quantidade && quantidade > 0) {
-          this.valorCalculadoReais = quantidade * 5; // 1 point = R$ 5.00
-        } else {
-          this.valorCalculadoReais = 0;
-        }
+        this.valorCalculadoReais = quantidade && quantidade > 0 ? quantidade * 5 : 0;
       })
     );
 
-    // Initialize with default value
+    // Valor inicial
     this.valorCalculadoReais = this.buyPointsForm.get('quantidadePontos')!.value * 5;
   }
 
@@ -70,12 +65,17 @@ export class BuyPointsModalComponent implements OnInit, OnDestroy {
 
       this.subscription.add(
         this.pacienteService.comprarPontos(user.pacienteId, valorReais).subscribe({
-          next: (response) => {
+          next: () => {
+            const quantidade = this.buyPointsForm.get('quantidadePontos')!.value;
+
             this.isLoading = false;
             this.purchaseSuccess.emit();
             this.resetForm();
             this.closeModal();
-            alert(`Compra realizada com sucesso! ${this.buyPointsForm.get('quantidadePontos')!.value} pontos adicionados.`);
+
+            setTimeout(() => {
+              this.showToast(`Compra realizada com sucesso! ${quantidade} ${quantidade === 1 ? 'ponto' : 'pontos'} adicionados.`);
+            }, 500);
           },
           error: (error) => {
             this.isLoading = false;
@@ -101,7 +101,6 @@ export class BuyPointsModalComponent implements OnInit, OnDestroy {
   }
 
   private closeModal(): void {
-    // Use Bootstrap's modal API to close the modal
     const modalElement = document.getElementById('buyPointsModal');
     if (modalElement) {
       const modal = (window as any).bootstrap?.Modal?.getInstance(modalElement);
@@ -118,28 +117,35 @@ export class BuyPointsModalComponent implements OnInit, OnDestroy {
     });
   }
 
+  private showToast(message: string): void {
+    const toastEl = document.getElementById('toastCompraSucesso');
+    if (toastEl) {
+      const toastBody = toastEl.querySelector('.toast-body');
+      if (toastBody) {
+        toastBody.textContent = message;
+      }
+      const toastInstance = new (window as any).bootstrap.Toast(toastEl, { delay: 5000 });
+      toastInstance.show();
+    }
+  }
+
   private getErrorMessage(error: any): string {
     if (error.status === 400) {
       return error.error?.message || 'Dados inválidos. Verifique os valores e tente novamente.';
     }
-
-    // if (error.status === 401 || error.status === 403) {
     if (error.status === 401) {
       return 'Sessão expirada. Faça login novamente.';
     }
-
     if (error.status === 500) {
       return 'Sistema temporariamente indisponível. Tente novamente em alguns minutos.';
     }
-
     if (error.status === 0) {
       return 'Falha na conexão. Verifique sua internet e tente novamente.';
     }
-
     return error.error?.message || 'Erro inesperado. Tente novamente.';
   }
 
-  // Getter for easier template access
+  // Getters
   get quantidadePontos() {
     return this.buyPointsForm.get('quantidadePontos');
   }
