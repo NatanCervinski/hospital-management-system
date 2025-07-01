@@ -103,3 +103,14 @@ baseline.json
 .DS_Store
 
 /frontend/.angular/
+# Maven/Java generated files
+target/
+*.jar
+*.war
+*.class
+
+# Outros arquivos de sistema ou IDE (se aplicável)
+.idea/
+*.iml
+.DS_Store
+npm-debug.log*
