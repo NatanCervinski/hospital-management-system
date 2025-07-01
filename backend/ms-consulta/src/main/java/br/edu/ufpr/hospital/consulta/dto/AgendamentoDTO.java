@@ -4,69 +4,34 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 /**
- * DTO for creating bookings
+ * DTO para criação de agendamento (usado pelo paciente)
  */
 public class AgendamentoDTO {
-    
-    @NotNull(message = "ID da consulta é obrigatório")
-    private Long consultaId;
-    
+
     @DecimalMin(value = "0", message = "Pontos usados não podem ser negativos")
     @Digits(integer = 8, fraction = 2, message = "Pontos devem ter no máximo 8 dígitos inteiros e 2 decimais")
     private BigDecimal pontosUsados = BigDecimal.ZERO;
-    
-    @Size(max = 500, message = "Observações devem ter no máximo 500 caracteres")
-    private String observacoes;
-    
-    // Constructors
+
+    // Construtores
     public AgendamentoDTO() {}
-    
-    public AgendamentoDTO(Long consultaId, BigDecimal pontosUsados) {
-        this.consultaId = consultaId;
+
+    public AgendamentoDTO(BigDecimal pontosUsados) {
         this.pontosUsados = pontosUsados != null ? pontosUsados : BigDecimal.ZERO;
     }
-    
-    public AgendamentoDTO(Long consultaId, BigDecimal pontosUsados, String observacoes) {
-        this(consultaId, pontosUsados);
-        this.observacoes = observacoes;
-    }
-    
-    // Business validation methods
-    public boolean isValidPontosUsados() {
-        return pontosUsados != null && pontosUsados.compareTo(BigDecimal.ZERO) >= 0;
-    }
-    
-    // Getters and Setters
-    public Long getConsultaId() {
-        return consultaId;
-    }
-    
-    public void setConsultaId(Long consultaId) {
-        this.consultaId = consultaId;
-    }
-    
+
+    // Getters e Setters
     public BigDecimal getPontosUsados() {
         return pontosUsados;
     }
-    
+
     public void setPontosUsados(BigDecimal pontosUsados) {
         this.pontosUsados = pontosUsados != null ? pontosUsados : BigDecimal.ZERO;
     }
-    
-    public String getObservacoes() {
-        return observacoes;
-    }
-    
-    public void setObservacoes(String observacoes) {
-        this.observacoes = observacoes;
-    }
-    
+
     @Override
     public String toString() {
         return "AgendamentoDTO{" +
-                "consultaId=" + consultaId +
-                ", pontosUsados=" + pontosUsados +
-                ", observacoes='" + observacoes + '\'' +
+                "pontosUsados=" + pontosUsados +
                 '}';
     }
 }

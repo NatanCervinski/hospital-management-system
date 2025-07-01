@@ -26,8 +26,9 @@ export class PacienteService {
    * @returns Observable with array of appointments
    */
   getAgendamentos(pacienteId: string): Observable<Agendamento[]> {
-    return this.http.get<Agendamento[]>(`${this.API_BASE_URL}/pacientes/${pacienteId}/agendamentos`);
+    return this.http.get<Agendamento[]>(`${this.API_BASE_URL}/agendamentos/paciente`);
   }
+
 
   /**
    * Gets available consultations (can be filtered)
@@ -46,9 +47,11 @@ export class PacienteService {
    * @param agendamentoData Appointment data
    * @returns Observable with scheduling response
    */
-  agendarConsulta(agendamentoData: any): Observable<any> {
-    return this.http.post(`${this.API_BASE_URL}/agendamentos`, agendamentoData);
+  agendarConsulta(agendamentoData: { consultaId: number, pontosUsados: number}): Observable<any> {
+    const { consultaId, ...body } = agendamentoData;
+    return this.http.post(`${this.API_BASE_URL}/agendamentos/consulta/${consultaId}`, body);
   }
+
 
   /**
    * Buys points for a patient

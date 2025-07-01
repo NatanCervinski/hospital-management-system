@@ -5,6 +5,9 @@ import br.edu.ufpr.hospital.consulta.exception.*;
 import br.edu.ufpr.hospital.consulta.model.*;
 import br.edu.ufpr.hospital.consulta.repository.AgendamentoRepository;
 import br.edu.ufpr.hospital.consulta.repository.ConsultaRepository;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -265,7 +268,6 @@ public class ConsultaService {
         agendamento.setValorPago(valorPago);
         agendamento.setDataAgendamento(LocalDateTime.now());
         agendamento.setStatus(StatusAgendamento.CRIADO);
-        agendamento.setObservacoes(dto.getObservacoes());
 
         // Deduct points from patient account
         if (pontosUsados.compareTo(BigDecimal.ZERO) > 0) {
@@ -421,24 +423,21 @@ public class ConsultaService {
      * Extract patient ID from JWT token claims
      * Helper method for controllers to get patient ID from authentication
      */
-    public static Integer extractPacienteIdFromToken(org.springframework.security.core.Authentication authentication) {
-        if (authentication == null || authentication.getPrincipal() == null) {
-            throw new AcessoNegadoException("Token de autenticação inválido");
-        }
-
-        // Extract patient ID from JWT claims
-        if (authentication.getPrincipal() instanceof org.springframework.security.oauth2.jwt.Jwt) {
-            org.springframework.security.oauth2.jwt.Jwt jwt = (org.springframework.security.oauth2.jwt.Jwt) authentication
-                    .getPrincipal();
-            Integer pacienteId = jwt.getClaim("pacienteId");
-            if (pacienteId == null) {
-                throw new AcessoNegadoException("ID do paciente não encontrado no token");
-            }
-            return pacienteId;
-        }
-
-        throw new AcessoNegadoException("Formato de token inválido");
+public static Integer extractPacienteIdFromToken(Authentication authentication) {
+    if (authentication == null || authentication.getPrincipal() == null) {
+        throw new AcessoNegadoException("Token de autenticação inválido");
     }
+
+    if (authentication.getPrincipal() instanceof Jwt jwt) {
+        Number raw = jwt.getClaim("pacienteId");
+        if (raw == null) {
+            throw new AcessoNegadoException("ID do paciente não encontrado no token");
+        }
+        return raw.intValue(); // <- converte Long/Integer corretamente
+    }
+
+    throw new AcessoNegadoException("Formato de token inválido");
+}
 
     public List<ConsultaResponseDTO> buscarEspecialidades() {
         List<Consulta> consultas = consultaRepository.findAll();

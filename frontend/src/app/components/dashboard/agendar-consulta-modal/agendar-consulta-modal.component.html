@@ -1,0 +1,67 @@
+<!-- Modal -->
+<div class="modal fade" id="agendarConsultaModal" tabindex="-1" aria-labelledby="agendarConsultaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title hospital-brand" id="agendarConsultaModalLabel">
+          <i class="fas fa-calendar-plus me-2"></i>Agendar Consulta
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <form [formGroup]="agendarForm" (ngSubmit)="onSubmit()">
+        <div class="modal-body">
+          <!-- Error message -->
+          <div *ngIf="errorMessage" class="alert alert-danger">
+            <i class="fas fa-exclamation-circle me-2"></i>{{ errorMessage }}
+          </div>
+
+          <!-- Especialidade -->
+          <div class="mb-3">
+            <label for="especialidade" class="form-label">
+              <i class="fas fa-stethoscope me-1"></i>Especialidade
+            </label>
+            <select id="especialidade" class="form-select" formControlName="especialidade" (change)="buscarConsultas()">
+              <option value="">Selecione...</option>
+              <option *ngFor="let esp of especialidades" [value]="esp.nome">{{ esp.nome }}</option>
+            </select>
+          </div>
+
+          <!-- Consulta disponível -->
+          <div class="mb-3">
+            <label for="consultaId" class="form-label">
+              <i class="fas fa-calendar me-1"></i>Consulta Disponível
+            </label>
+            <select id="consultaId" class="form-select" formControlName="consultaId">
+              <option value="">Selecione...</option>
+              <option *ngFor="let consulta of consultasDisponiveis" [value]="consulta.id">
+                {{ formatDateTime(consulta.dataHora) }} | {{ consulta.medico }} | {{ formatCurrency(consulta.valor) }} | {{ consulta.vagasDisponiveis }} vagas
+              </option>
+            </select>
+          </div>
+
+          <!-- Pontos a utilizar -->
+          <div class="mb-3">
+            <label for="pontosUsados" class="form-label">
+              <i class="fas fa-coins me-1"></i>Pontos para usar
+            </label>
+            <input type="number" class="form-control" id="pontosUsados" formControlName="pontosUsados" min="0">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeModal()" [disabled]="isLoading">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+
+          <button type="submit" class="btn btn-hospital" [disabled]="agendarForm.invalid || isLoading">
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+            <i *ngIf="!isLoading" class="fas fa-check-circle me-2"></i>
+            <span *ngIf="!isLoading">Confirmar Agendamento</span>
+            <span *ngIf="isLoading">Agendando...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

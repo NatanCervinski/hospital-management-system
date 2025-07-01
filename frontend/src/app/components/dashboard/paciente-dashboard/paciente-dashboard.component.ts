@@ -7,17 +7,18 @@ import { BuyPointsModalComponent } from '../buy-points-modal/buy-points-modal.co
 import { Subscription, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { HistoryPointsModalComponent } from '../history-points-modal/history-points-modal.component';
+import { AgendarConsultaModalComponent } from '../agendar-consulta-modal/agendar-consulta-modal.component';
 
 @Component({
   selector: 'app-paciente-dashboard',
-  imports: [CommonModule, BuyPointsModalComponent, HistoryPointsModalComponent],
+  imports: [CommonModule, BuyPointsModalComponent, HistoryPointsModalComponent, AgendarConsultaModalComponent],
   templateUrl: './paciente-dashboard.component.html',
   styleUrl: './paciente-dashboard.component.scss'
 })
 export class PacienteDashboardComponent implements OnInit, OnDestroy {
   user: User | null = null;
   pacienteDetalhes: PacienteDetalhes | null = null;
-  agendamentos: Agendamento[] = [];
+  agendamentos: any[] = [];
   isLoading = true;
   isAuthenticated = false;
   error: string | null = null;
@@ -80,11 +81,11 @@ export class PacienteDashboardComponent implements OnInit, OnDestroy {
     this.subscription.add(
       forkJoin({
         detalhes: this.pacienteService.getPacienteDetalhes(pacienteId),
-        // agendamentos: this.pacienteService.getAgendamentos(pacienteId)
+        agendamentos: this.pacienteService.getAgendamentos(pacienteId)
       }).subscribe({
         next: (data) => {
           this.pacienteDetalhes = data.detalhes;
-          this.agendamentos = [];
+          this.agendamentos = data.agendamentos;
           this.isLoading = false;
         },
         error: (error) => {
@@ -101,16 +102,16 @@ export class PacienteDashboardComponent implements OnInit, OnDestroy {
     }
 
     const now = new Date();
-    const appointmentDate = new Date(agendamento.dataHora);
+    const appointmentDate = new Date(agendamento.consulta?.dataHora || '');
     const hoursDifference = (appointmentDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
     return hoursDifference <= 48 && hoursDifference >= 0;
   }
 
   cancelarAgendamento(agendamento: Agendamento): void {
-    if (confirm(`Tem certeza que deseja cancelar o agendamento ${agendamento.codigo}?`)) {
+    if (confirm(`Tem certeza que deseja cancelar o agendamento ${agendamento.codigoAgendamento}?`)) {
       this.subscription.add(
-        this.pacienteService.cancelarAgendamento(agendamento.codigo).subscribe({
+        this.pacienteService.cancelarAgendamento(agendamento.codigoAgendamento).subscribe({
           next: () => {
             agendamento.status = 'CANCELADO';
             alert('Agendamento cancelado com sucesso!');
@@ -126,7 +127,7 @@ export class PacienteDashboardComponent implements OnInit, OnDestroy {
 
   fazerCheckin(agendamento: Agendamento): void {
     this.subscription.add(
-      this.pacienteService.fazerCheckin(agendamento.codigo).subscribe({
+      this.pacienteService.fazerCheckin(agendamento.codigoAgendamento).subscribe({
         next: () => {
           agendamento.status = 'CHECK-IN';
           alert('Check-in realizado com sucesso!');

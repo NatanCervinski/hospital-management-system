@@ -30,8 +30,8 @@
             <label for="quantidadePontos" class="form-label">
               <i class="fas fa-hashtag me-1"></i>Quantidade de Pontos
             </label>
-            <input 
-              type="number" 
+            <input
+              type="number"
               class="form-control"
               id="quantidadePontos"
               formControlName="quantidadePontos"
@@ -39,7 +39,7 @@
               max="1000"
               placeholder="Digite a quantidade de pontos"
               [class.is-invalid]="quantidadePontos?.invalid && quantidadePontos?.touched">
-            
+
             <!-- Validation Messages -->
             <div *ngIf="quantidadePontos?.invalid && quantidadePontos?.touched" class="invalid-feedback">
               <div *ngIf="quantidadePontos?.errors?.['required']">
@@ -63,29 +63,29 @@
               {{ valorCalculadoReais | currency:'BRL':'symbol':'1.2-2':'pt' }}
             </h3>
             <small class="text-muted">
-              {{ buyPointsForm.get('quantidadePontos')?.value || 0 }} 
+              {{ buyPointsForm.get('quantidadePontos')?.value || 0 }}
               {{ (buyPointsForm.get('quantidadePontos')?.value || 0) === 1 ? 'ponto' : 'pontos' }}
             </small>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button 
-            type="button" 
-            class="btn btn-outline-secondary" 
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
             (click)="onCancel()"
             [disabled]="isLoading">
             <i class="fas fa-times me-2"></i>Cancelar
           </button>
-          
-          <button 
-            type="submit" 
+
+          <button
+            type="submit"
             class="btn btn-success"
             [disabled]="!isFormValid || isLoading">
-            
+
             <!-- Loading Spinner -->
             <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            
+
             <!-- Button Content -->
             <i *ngIf="!isLoading" class="fas fa-credit-card me-2"></i>
             <span *ngIf="isLoading">Processando...</span>
@@ -98,11 +98,11 @@
 </div>
 
 <!-- Toast de Sucesso -->
-<div 
+<div
   id="toastCompraSucesso"
   class="toast align-items-center text-white bg-success border-0 position-fixed bottom-0 end-0 m-3"
-  role="alert" 
-  aria-live="assertive" 
+  role="alert"
+  aria-live="assertive"
   aria-atomic="true">
   <div class="d-flex">
     <div class="toast-body">

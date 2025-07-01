@@ -77,77 +77,82 @@
         </div>
       </div>
 
-      <!-- Appointments Table -->
-      <div class="card card-shadow">
-        <div class="card-header">
-          <h5 class="mb-0">
-            <i class="fas fa-calendar-alt me-2"></i>Meus Agendamentos
-          </h5>
-        </div>
-        <div class="card-body">
-          <div *ngIf="agendamentos.length === 0" class="text-center py-4">
-            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-            <p class="text-muted">Nenhum agendamento encontrado.</p>
-          </div>
+<!-- Appointments Table -->
+<div class="card card-shadow">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <i class="fas fa-calendar-alt me-2"></i>Meus Agendamentos
+    </h5>
+  </div>
+  <div class="card-body">
+    <div *ngIf="agendamentos.length === 0" class="text-center py-4">
+      <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+      <p class="text-muted">Nenhum agendamento encontrado.</p>
+    </div>
 
-          <div *ngIf="agendamentos.length > 0" class="table-responsive">
-            <table class="table table-hover">
-              <thead class="table-light">
-                <tr>
-                  <th>Código</th>
-                  <th>Especialidade</th>
-                  <th>Médico</th>
-                  <th>Data/Hora</th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let agendamento of agendamentos">
-                  <td>{{ agendamento.codigo }}</td>
-                  <td>{{ agendamento.especialidade }}</td>
-                  <td>{{ agendamento.nomeMedico }}</td>
-                  <td>{{ agendamento.dataHora | date:'dd/MM/yyyy HH:mm' }}</td>
-                  <td>
-                    <span class="badge rounded-pill" [ngClass]="getStatusClass(agendamento.status)">
-                      {{ agendamento.status }}
-                    </span>
-                  </td>
-                  <td>
-                    <div class="btn-group btn-group-sm" role="group">
-                      <!-- Cancel Button -->
-                      <button
-                        *ngIf="agendamento.status === 'CRIADO' || agendamento.status === 'CHECK-IN'"
-                        class="btn btn-outline-danger"
-                        (click)="cancelarAgendamento(agendamento)"
-                        title="Cancelar agendamento">
-                        <i class="fas fa-times"></i>
-                        Cancelar
-                      </button>
+    <div *ngIf="agendamentos.length > 0" class="table-responsive">
+      <table class="table table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>Código</th>
+            <th>Especialidade</th>
+            <th>Médico</th>
+            <th>Data/Hora</th>
+            <th>Valor Total</th>
+            <th>Valor Pago</th>
+            <th>Pontos Usados</th>
+            <th>Desconto</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let agendamento of agendamentos">
+            <td>{{ agendamento.codigoAgendamento }}</td>
+            <td>{{ agendamento.consulta?.especialidade }}</td>
+            <td>{{ agendamento.consulta?.medico }}</td>
+            <td>{{ agendamento.consulta?.dataHora | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ agendamento.valorTotal | currency:'BRL':'symbol' }}</td>
+            <td>{{ agendamento.valorPago | currency:'BRL':'symbol' }}</td>
+            <td>{{ agendamento.pontosUsados }}</td>
+            <td>{{ agendamento.descontoPontos | currency:'BRL':'symbol' }}</td>
+            <td>
+              <span class="badge rounded-pill" [ngClass]="getStatusClass(agendamento.status)">
+                {{ agendamento.status }}
+              </span>
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm" role="group">
+                <button
+                  *ngIf="agendamento.status === 'CRIADO' || agendamento.status === 'CHECK-IN'"
+                  class="btn btn-outline-danger"
+                  (click)="cancelarAgendamento(agendamento)"
+                  title="Cancelar agendamento">
+                  <i class="fas fa-times"></i> Cancelar
+                </button>
 
-                      <!-- Check-in Button -->
-                      <button
-                        *ngIf="isCheckInAvailable(agendamento)"
-                        class="btn btn-outline-primary"
-                        (click)="fazerCheckin(agendamento)"
-                        title="Fazer check-in">
-                        <i class="fas fa-check-in"></i>
-                        Check-in
-                      </button>
-                    </div>
+                <button
+                  *ngIf="isCheckInAvailable(agendamento)"
+                  class="btn btn-outline-primary"
+                  (click)="fazerCheckin(agendamento)"
+                  title="Fazer check-in">
+                  <i class="fas fa-check-in"></i> Check-in
+                </button>
+              </div>
 
-                    <!-- No actions available -->
-                    <span *ngIf="!isCheckInAvailable(agendamento) && agendamento.status !== 'CRIADO' && agendamento.status !== 'CHECK-IN'"
-                          class="text-muted small">
-                      Nenhuma ação disponível
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+              <span *ngIf="!isCheckInAvailable(agendamento) && agendamento.status !== 'CRIADO' && agendamento.status !== 'CHECK-IN'"
+                    class="text-muted small">
+                Nenhuma ação disponível
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
 
       <!-- Quick Actions -->
       <div class="row mt-4">
@@ -157,7 +162,9 @@
               <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
               <h5 class="card-title">Agendar Consulta</h5>
               <p class="card-text">Agendar uma nova consulta</p>
-              <button class="btn btn-hospital">Agendar</button>
+              <button class="btn btn-hospital" data-bs-toggle="modal" data-bs-target="#agendarConsultaModal">
+                <i class="fas fa-calendar-plus me-2"></i>Agendar
+              </button>
             </div>
           </div>
         </div>
@@ -170,4 +177,5 @@
 <app-buy-points-modal (purchaseSuccess)="onPurchaseSuccess()"></app-buy-points-modal>
 <!--History Points Modal-->>
 <app-history-points-modal></app-history-points-modal>
-
+<!-- Modal inline -->
+<app-agendar-consulta-modal (agendamentoSuccess)="onPurchaseSuccess()"></app-agendar-consulta-modal>
