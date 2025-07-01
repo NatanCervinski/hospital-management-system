@@ -29,6 +29,9 @@ public class UpdateFuncionarioDTO {
   @Size(max = 15, message = "Telefone não pode ter mais de 15 caracteres")
   private String telefone;
 
+  @Size(max = 50, message = "Especialidade não pode ter mais de 50 caracteres")
+  private String especialidade; // Medical specialty for doctors (optional)
+
   // Campos de endereço (todos opcionais)
   @Pattern(regexp = "\\d{8}", message = "CEP deve conter exatamente 8 dígitos")
   private String cep;

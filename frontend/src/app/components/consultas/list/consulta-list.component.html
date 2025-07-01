@@ -1,8 +1,112 @@
 <div class="container mt-4">
-  <h2>Consultas nas próximas 48 horas</h2>
+  <!-- Header with navigation -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+      <i class="fas fa-calendar-alt me-2"></i>
+      Gerenciamento de Consultas
+    </h2>
+    <button class="btn btn-outline-secondary" (click)="voltarAoDashboard()">
+      <i class="fas fa-tachometer-alt me-2"></i>
+      Voltar ao Dashboard
+    </button>
+  </div>
 
-  <div *ngIf="loading">Carregando...</div>
+  <!-- Action buttons -->
+  <div class="mb-3">
+    <button class="btn btn-primary" (click)="cadastrarNovaConsulta()">
+      <i class="fas fa-plus me-2"></i>Cadastrar Nova Consulta
+    </button>
+  </div>
 
+  <!-- Filter Controls -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h6 class="card-title mb-0">
+        <i class="fas fa-filter me-2"></i>
+        Filtros
+        <small class="text-muted ms-2">
+          ({{ filteredCount }} de {{ totalCount }} consultas)
+        </small>
+      </h6>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="filterForm">
+        <div class="row g-3">
+          <!-- Search Text -->
+          <div class="col-md-4">
+            <label for="searchText" class="form-label">Buscar</label>
+            <input
+              type="text"
+              id="searchText"
+              class="form-control"
+              formControlName="searchText"
+              placeholder="Código, especialidade ou médico..."
+            >
+          </div>
+
+          <!-- Status Filter -->
+          <div class="col-md-3">
+            <label for="status" class="form-label">Status</label>
+            <select id="status" class="form-select" formControlName="status">
+              <option value="all">Todos os Status</option>
+              <option value="DISPONIVEL">Disponível</option>
+              <option value="CANCELADA">Cancelada</option>
+              <option value="REALIZADA">Realizada</option>
+            </select>
+          </div>
+
+          <!-- Specialty Filter -->
+          <div class="col-md-3">
+            <label for="especialidade" class="form-label">Especialidade</label>
+            <select id="especialidade" class="form-select" formControlName="especialidade">
+              <option value="all">Todas as Especialidades</option>
+              <option *ngFor="let esp of availableEspecialidades" [value]="esp">
+                {{ esp }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Doctor Filter -->
+          <div class="col-md-2">
+            <label for="medico" class="form-label">Médico</label>
+            <select id="medico" class="form-select" formControlName="medico">
+              <option value="all">Todos os Médicos</option>
+              <option *ngFor="let med of availableMedicos" [value]="med">
+                {{ med }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Filter Actions -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="clearFilters()">
+              <i class="fas fa-times me-1"></i>
+              Limpar Filtros
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Carregando...</span>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error" class="alert alert-danger mt-3">
+    {{ error }}
+    <button class="btn btn-sm btn-outline-danger ms-2" (click)="refresh()">
+      <i class="fas fa-refresh me-1"></i>Tentar novamente
+    </button>
+  </div>
+
+  <!-- Consultations table -->
   <table *ngIf="!loading && consultas.length > 0" class="table table-striped mt-3">
     <thead>
       <tr>
@@ -13,12 +117,7 @@
         <th>Valor (R$)</th>
         <th>Vagas</th>
         <th>Status</th>
-      <th>Ações</th>
-    <td>
-          <button class="btn btn-sm btn-primary me-1">Confirmar</button>
-          <button class="btn btn-sm btn-danger me-1">Cancelar</button>
-          <button class="btn btn-sm btn-success">Realizar</button>
-        </td>
+        <th>Ações</th>
       </tr>
     </thead>
     <tbody>
@@ -29,17 +128,39 @@
         <td>{{ c.medico }}</td>
         <td>{{ c.valor | currency:'BRL' }}</td>
         <td>{{ c.vagas }}</td>
-        <td>{{ c.status }}</td>
-      <td>
-          <button class="btn btn-sm btn-primary me-1">Confirmar</button>
-          <button class="btn btn-sm btn-danger me-1">Cancelar</button>
-          <button class="btn btn-sm btn-success">Realizar</button>
+        <td>
+          <span class="badge" 
+                [class.bg-success]="c.status === 'DISPONIVEL'"
+                [class.bg-danger]="c.status === 'CANCELADA'"
+                [class.bg-secondary]="c.status === 'REALIZADA'">
+            {{ c.status }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary" (click)="gerenciarConsulta(c.id)">
+            <i class="fas fa-cog me-1"></i>Gerenciar
+          </button>
         </td>
       </tr>
     </tbody>
   </table>
 
+  <!-- Empty state -->
   <div *ngIf="!loading && consultas.length === 0" class="alert alert-info mt-3">
-    Nenhuma consulta nas próximas 48h.
+    <i class="fas fa-info-circle me-2"></i>
+    <span *ngIf="totalCount === 0">Nenhuma consulta encontrada.</span>
+    <span *ngIf="totalCount > 0 && filteredCount === 0">
+      Nenhuma consulta corresponde aos filtros aplicados. 
+      <button class="btn btn-link p-0 ms-1" (click)="clearFilters()">
+        Limpar filtros
+      </button>
+    </span>
   </div>
 </div>
+
+<!-- Consultation Creation Modal -->
+<app-consulta-form 
+  [show]="showCreateModal"
+  (showChange)="showCreateModal = $event"
+  (consultaCreated)="onConsultaCreated()">
+</app-consulta-form>

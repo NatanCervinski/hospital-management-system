@@ -22,6 +22,7 @@ import br.edu.ufpr.hospital.autenticacao.dto.UpdateFuncionarioDTO;
 import br.edu.ufpr.hospital.autenticacao.service.FuncionarioService;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -316,6 +317,39 @@ public class FuncionarioController {
       Map<String, String> error = new HashMap<>();
       error.put("error", "Erro interno do servidor");
       error.put("message", "Tente novamente em alguns minutos");
+
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+  }
+
+  /**
+   * Lista funcionários ativos (médicos) para seleção em consultas
+   * Retorna apenas funcionários com status ativo para uso em formulários
+   * 
+   * @return Lista simplificada de funcionários ativos
+   */
+  @GetMapping("/medicos")
+  @PreAuthorize("hasRole('FUNCIONARIO')")
+  public ResponseEntity<?> listarMedicosAtivos() {
+    try {
+      log.info("Listando médicos ativos para seleção");
+
+      // Busca apenas funcionários ativos sem paginação
+      List<FuncionarioListDTO> medicos = funcionarioService.listarFuncionariosAtivos();
+
+      Map<String, Object> response = new HashMap<>();
+      response.put("medicos", medicos);
+      response.put("total", medicos.size());
+
+      log.info("Encontrados {} médicos ativos", medicos.size());
+      return ResponseEntity.ok(response);
+
+    } catch (Exception e) {
+      log.error("Erro ao listar médicos ativos: {}", e.getMessage(), e);
+
+      Map<String, String> error = new HashMap<>();
+      error.put("error", "Erro interno do servidor");
+      error.put("message", "Não foi possível listar os médicos");
 
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }

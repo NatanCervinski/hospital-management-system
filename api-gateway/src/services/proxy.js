@@ -85,14 +85,14 @@ class ProxyService {
     }
 
     // Rotas de consulta/agendamento
-    if (path.startsWith('/consultas') || path.startsWith('/agendamentos')) {
+    if (path.startsWith('/consultas') || path.startsWith('/agendamentos') || path.startsWith('/func-ops')) {
       return {
         name: 'consulta',
         url: config.microservices.consulta.url,
         timeout: config.microservices.consulta.timeout
       };
     }
-
+    console.log(`❌ Nenhuma regra de serviço encontrada para a rota: ${path}`);
     return null;
   }
 
@@ -117,7 +117,7 @@ class ProxyService {
 
         console.log(`🔄 Encaminhando requisição para o serviço: ${serviceConfig.name} (${req.method})`);
         console.log(`📍 URL original: ${req.originalUrl}`);
-        
+
         // Determine which path to use based on service requirements
         let finalPath;
         if (serviceConfig.name === 'autenticacao') {

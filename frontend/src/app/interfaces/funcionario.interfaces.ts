@@ -4,6 +4,7 @@ export interface FuncionarioResponseDTO {
   cpf: string;
   email: string;
   telefone: string;
+  especialidade?: string; // Medical specialty for doctors
   status: 'ATIVO' | 'INATIVO';
   ativo: boolean;
 }
@@ -13,12 +14,14 @@ export interface FuncionarioCadastroDTO {
   cpf: string;
   email: string;
   telefone: string;
+  especialidade?: string; // Medical specialty for doctors (optional)
 }
 
 export interface FuncionarioUpdateDTO {
   nome: string;
   email: string;
   telefone: string;
+  especialidade?: string; // Medical specialty for doctors (optional)
 }
 export interface PaginatedResponse<T> {
   content: T[]; // A lista de itens da página atual

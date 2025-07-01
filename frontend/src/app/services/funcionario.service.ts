@@ -98,6 +98,23 @@ export class FuncionarioService {
   }
 
   /**
+   * Gets list of active doctors for consultation form dropdown
+   * @returns Observable with array of active doctors
+   */
+  getMedicosAtivos(): Observable<FuncionarioResponseDTO[]> {
+    this.loadingSubject.next(true);
+
+    return this.http.get<{medicos: FuncionarioResponseDTO[], total: number}>(`${this.API_BASE_URL}/medicos`)
+      .pipe(
+        map(response => response.medicos),
+        tap(() => this.loadingSubject.next(false)),
+        tap({
+          error: () => this.loadingSubject.next(false)
+        })
+      );
+  }
+
+  /**
    * Gets error message from HTTP error response
    * @param error HTTP error response
    * @returns User-friendly error message

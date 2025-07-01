@@ -3,23 +3,54 @@
   <form (ngSubmit)="salvar()" #form="ngForm">
     <div class="mb-3">
       <label>Data/Hora</label>
-      <input type="datetime-local" class="form-control" [(ngModel)]="consulta.dataHora" name="dataHora" required>
+      <input
+        type="datetime-local"
+        class="form-control"
+        [(ngModel)]="consulta.dataHora"
+        name="dataHora"
+        [min]="minDate"
+        required
+      />
     </div>
     <div class="mb-3">
       <label>Especialidade</label>
-      <input type="text" class="form-control" [(ngModel)]="consulta.especialidade" name="especialidade" required>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="consulta.especialidade"
+        name="especialidade"
+        required
+      />
     </div>
     <div class="mb-3">
       <label>Médico</label>
-      <input type="text" class="form-control" [(ngModel)]="consulta.medico" name="medico" required>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="consulta.medico"
+        name="medico"
+        required
+      />
     </div>
     <div class="mb-3">
       <label>Valor (R$)</label>
-      <input type="number" class="form-control" [(ngModel)]="consulta.valor" name="valor" required>
+      <input
+        type="number"
+        class="form-control"
+        [(ngModel)]="consulta.valor"
+        name="valor"
+        required
+      />
     </div>
     <div class="mb-3">
       <label>Vagas</label>
-      <input type="number" class="form-control" [(ngModel)]="consulta.vagas" name="vagas" required>
+      <input
+        type="number"
+        class="form-control"
+        [(ngModel)]="consulta.vagas"
+        name="vagas"
+        required
+      />
     </div>
     <button class="btn btn-success" type="submit">Salvar</button>
   </form>

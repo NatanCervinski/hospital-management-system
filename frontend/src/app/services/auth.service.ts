@@ -24,6 +24,25 @@ export interface User {
   tipo: 'PACIENTE' | 'FUNCIONARIO';
 }
 
+export interface FuncionarioRegistrationRequest {
+  nome: string;
+  cpf: string;
+  email: string;
+  telefone: string;
+}
+
+export interface FuncionarioRegistrationResponse {
+  id: number;
+  nome: string;
+  email: string;
+  cpf: string;
+  telefone: string;
+  ativo: boolean;
+  dataCadastro: string;
+  tipo: string;
+  message: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -151,5 +170,22 @@ export class AuthService {
   getUserType(): 'PACIENTE' | 'FUNCIONARIO' | null {
     const user = this.getCurrentUser();
     return user ? user.tipo : null;
+  }
+
+  /**
+   * Creates authentication record for employee (step 1 of dual-record pattern)
+   * @param funcionario Employee authentication data
+   * @returns Observable with created authentication employee data
+   */
+  registerFuncionario(funcionario: FuncionarioRegistrationRequest): Observable<FuncionarioRegistrationResponse> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post<FuncionarioRegistrationResponse>(
+      `${this.API_BASE_URL}/register/funcionario`, 
+      funcionario, 
+      { headers }
+    );
   }
 }

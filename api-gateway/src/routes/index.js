@@ -3,6 +3,7 @@ const authRoutes = require('./auth');
 const pacienteRoutes = require('./paciente');
 const consultaRoutes = require('./consulta');
 const funcionarioRoutes = require('./funcionario');
+const funcionarioOpsRoutes = require('./funcionario-ops');
 const ProxyService = require('../services/proxy');
 
 const router = express.Router();
@@ -10,6 +11,7 @@ const router = express.Router();
 // Rotas específicas com middlewares de autenticação
 router.use('/auth', authRoutes);
 router.use('/funcionarios', funcionarioRoutes);
+router.use('/func-ops', funcionarioOpsRoutes); // Operational employee routes (ms-consulta)
 router.use('/pacientes', pacienteRoutes);
 router.use('/consultas', consultaRoutes);
 router.use('/agendamentos', consultaRoutes); // Alias para consultas
@@ -35,7 +37,7 @@ router.get('/health', async (req, res) => {
       null,
       5000 // Shorter timeout for health checks
     );
-    
+
     healthResults.services.autenticacao = {
       status: authResult.status === 200 ? 'UP' : 'DOWN',
       responseTime: Date.now(),
@@ -59,7 +61,7 @@ router.get('/health', async (req, res) => {
       null,
       5000 // Shorter timeout for health checks
     );
-    
+
     healthResults.services.paciente = {
       status: pacienteResult.status === 200 ? 'UP' : 'DOWN',
       responseTime: Date.now(),
@@ -83,7 +85,7 @@ router.get('/health', async (req, res) => {
       null,
       5000 // Shorter timeout for health checks
     );
-    
+
     healthResults.services.consulta = {
       status: consultaResult.status === 200 ? 'UP' : 'DOWN',
       responseTime: Date.now(),
@@ -114,15 +116,19 @@ router.get('/', (req, res) => {
     endpoints: {
       auth: '/api/auth',
       funcionarios: '/api/funcionarios',
+      funcionarios_ops: '/api/func-ops',
       pacientes: '/api/pacientes',
       consultas: '/api/consultas',
       agendamentos: '/api/agendamentos',
+      especialidades: '/api/consultas/especialidades',
+      medicos: '/api/func-ops/medicos',
       health: '/api/health'
     },
     public_endpoints: [
       '/api/auth/login',
       '/api/auth/register',
       '/api/pacientes/cadastro',
+      '/api/consultas/especialidades',
       '/api/health'
     ]
   });

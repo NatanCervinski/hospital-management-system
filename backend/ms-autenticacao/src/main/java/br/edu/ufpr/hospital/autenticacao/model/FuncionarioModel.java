@@ -25,6 +25,9 @@ public class FuncionarioModel extends UsuarioModel {
   @Column(name = "matricula", unique = true)
   private String matricula;
 
+  @Column(name = "especialidade")
+  private String especialidade; // Medical specialty for doctors (null for regular employees)
+
   @Embedded
   private Endereco endereco = new Endereco();
 
@@ -104,6 +107,14 @@ public class FuncionarioModel extends UsuarioModel {
       return cepLimpo.substring(0, 5) + "-" + cepLimpo.substring(5);
     }
     return endereco.cep;
+  }
+
+  /**
+   * Verifica se o funcionário é um médico
+   * @return true se for médico (possui especialidade), false caso contrário
+   */
+  public boolean isMedico() {
+    return especialidade != null && !especialidade.trim().isEmpty();
   }
 
   @Embeddable

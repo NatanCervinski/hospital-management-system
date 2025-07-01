@@ -14,6 +14,9 @@ router.use((req, res, next) => {
   next();
 });
 
+// Active doctors endpoint for consultation form dropdowns
+router.get('/medicos', ProxyService.createProxyMiddleware()); // GET /funcionarios/medicos - Get active doctors list
+
 // Proxy para todas as rotas de funcionário
 router.use('/', ProxyService.createProxyMiddleware());
 
