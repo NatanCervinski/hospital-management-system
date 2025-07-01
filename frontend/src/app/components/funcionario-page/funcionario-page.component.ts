@@ -98,6 +98,29 @@ export class FuncionarioPageComponent implements OnInit {
   }
 
   /**
+   * Toggles employee active/inactive status after confirmation
+   */
+  toggleFuncionarioStatus(funcionario: FuncionarioResponseDTO) {
+    const action = funcionario.ativo ? 'inativar' : 'ativar';
+    const confirmed = window.confirm(
+      `Tem certeza que deseja ${action} o funcionário "${funcionario.nome}"?`
+    );
+
+    if (confirmed) {
+      this.funcionarioService.toggleFuncionarioStatus(funcionario.id).subscribe({
+        next: () => {
+          // Refresh the list after successful status change
+          this.loadFuncionarios();
+        },
+        error: (error) => {
+          this.error = this.funcionarioService.getErrorMessage(error);
+          console.error('Error toggling funcionario status:', error);
+        }
+      });
+    }
+  }
+
+  /**
    * Handles successful creation or update from the modal
    */
   onFuncionarioSaved() {
